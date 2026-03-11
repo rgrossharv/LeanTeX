@@ -32,6 +32,8 @@ examples/minimal/*.fls
 examples/minimal/*.log
 examples/minimal/*.out
 examples/minimal/*.pdf
+!examples/minimal/minimal.pdf
+!examples/minimal/test4.pdf
 examples/minimal/*.run.xml
 examples/minimal/*.synctex.gz
 examples/minimal/*.toc

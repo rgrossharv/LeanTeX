@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LeanTeX - Install & Quick Start</title>
+  <meta name="description" content="LeanTeX installation guide and quick start for GitHub Pages.">
+  <style>
+    :root {
+      --bg: #f6f4ef;
+      --ink: #161616;
+      --muted: #5e5b57;
+      --card: #fffdf8;
+      --line: #ddd6c8;
+      --brand: #8a5a00;
+      --brand-2: #1b6a4f;
+      --code-bg: #1d1d1d;
+      --code-ink: #f5f5f5;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 500px at -10% -20%, #ffe7b9 0%, transparent 70%),
+        radial-gradient(1200px 500px at 120% -10%, #c8f2e4 0%, transparent 70%),
+        var(--bg);
+      line-height: 1.5;
+    }
+
+    .wrap {
+      width: min(1000px, 92vw);
+      margin: 0 auto;
+      padding: 40px 0 72px;
+    }
+
+    .hero {
+      background: linear-gradient(140deg, #fffdf8, #f6efe3);
+      border: 1px solid var(--line);
+      border-radius: calc(var(--radius) + 6px);
+      box-shadow: var(--shadow);
+      padding: 30px;
+      animation: rise 600ms ease both;
+    }
+
+    .kicker {
+      display: inline-block;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--brand);
+      background: #fff4d9;
+      border: 1px solid #f1ddb2;
+      border-radius: 999px;
+      padding: 6px 10px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 4.4vw, 3.3rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+
+    .sub {
+      margin: 0;
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 70ch;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px 18px 14px;
+      box-shadow: var(--shadow);
+      animation: rise 700ms ease both;
+    }
+
+    .card h2, .card h3 {
+      margin: 0 0 8px;
+      line-height: 1.2;
+    }
+
+    .card h2 { font-size: 1.35rem; }
+    .card h3 { font-size: 1.05rem; }
+
+    .muted { color: var(--muted); }
+
+    code.inline {
+      background: #f3eee3;
+      padding: 1px 6px;
+      border-radius: 6px;
+      border: 1px solid #e6ddcc;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: .95em;
+    }
+
+    pre {
+      margin: 10px 0 4px;
+      background: var(--code-bg);
+      color: var(--code-ink);
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #3a3a3a;
+      overflow: auto;
+      font-size: .93rem;
+      line-height: 1.45;
+    }
+
+    .btn {
+      display: inline-block;
+      margin-top: 8px;
+      border: 1px solid #d6c9af;
+      background: #fff4df;
+      color: #4f3300;
+      border-radius: 10px;
+      padding: 8px 12px;
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn.secondary {
+      background: #ecf8f3;
+      border-color: #c9e9dd;
+      color: #184f3c;
+    }
+
+    ol, ul { margin: 8px 0 0 18px; padding: 0; }
+
+    .footer {
+      margin-top: 20px;
+      font-size: .93rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <span class="kicker">LeanTeX Docs</span>
+      <h1>LeanTeX Installation & Quick Start</h1>
+      <p class="sub">LeanTeX lets you write Lean 4 blocks in LaTeX and render code + diagnostics into your PDF. This page is a single-file site for GitHub Pages.</p>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>1. Get LeanTeX</h2>
+        <p class="muted">Clone the repo and enter the project folder.</p>
+        <pre><code>git clone https://github.com/rgrossharv/LeanTeX.git
+cd LeanTeX</code></pre>
+      </article>
+
+      <article class="card">
+        <h2>2. Install Python Package</h2>
+        <p class="muted">Normal install:</p>
+        <pre><code>python3 -m pip install .</code></pre>
+        <p class="muted">Dev/editable install:</p>
+        <pre><code>python3 -m pip install -e .</code></pre>
+        <p class="muted">If older pip errors on <code class="inline">bdist_wheel</code>:</p>
+        <pre><code>python3 -m pip install --upgrade pip setuptools wheel</code></pre>
+      </article>
+
+      <article class="card">
+        <h2>3. Install TeX Package</h2>
+        <p class="muted">One-time install to your TeX tree:</p>
+        <pre><code>leantex install-tex</code></pre>
+        <p class="muted">This installs <code class="inline">leantex.sty</code>, <code class="inline">leantexonefile.sty</code>, and updates <code class="inline">~/.latexmkrc</code>.</p>
+      </article>
+
+      <article class="card">
+        <h2>4. Minimal TeX Setup</h2>
+        <pre><code>\documentclass{article}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{leantex}
+\begin{document}
+\begin{lean}
+#check Nat.succ
+\end{lean}
+\end{document}</code></pre>
+      </article>
+
+      <article class="card">
+        <h2>5. Build Commands</h2>
+        <p class="muted">Direct build:</p>
+        <pre><code>leantex build path/to/file.tex</code></pre>
+        <p class="muted">Watch mode:</p>
+        <pre><code>leantex watch path/to/file.tex</code></pre>
+        <p class="muted">Module mode (without global install):</p>
+        <pre><code>PYTHONPATH=. python3 -m leantex build path/to/file.tex</code></pre>
+      </article>
+
+      <article class="card">
+        <h2>Troubleshooting</h2>
+        <ul>
+          <li>If PDF shows “Missing generated data”, run <code class="inline">leantex build file.tex --no-latexmk</code> first.</li>
+          <li>Ensure your file uses <code class="inline">\usepackage[margin=0.5in]{geometry}</code>, not reversed option syntax.</li>
+          <li>Run <code class="inline">kpsewhich leantex.sty</code> to confirm TeX can find the style.</li>
+          <li>If multiple hooks exist in <code class="inline">~/.latexmkrc</code>, keep the LeanTeX one active.</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h3>GitHub Pages Setup (No Custom Domain)</h3>
+        <ol>
+          <li>Create a new GitHub repo for this site.</li>
+          <li>Drag and drop this <code class="inline">index.html</code> into the repo root.</li>
+          <li>Go to <code class="inline">Settings -> Pages</code>.</li>
+          <li>Source: <code class="inline">Deploy from a branch</code>, branch <code class="inline">main</code>, folder <code class="inline">/root</code>.</li>
+          <li>Save and wait for publish.</li>
+        </ol>
+        <button class="btn" id="copyPageUrl">Copy expected URL format</button>
+        <p id="urlMsg" class="muted"></p>
+      </article>
+
+      <article class="card">
+        <h3>Project Repo</h3>
+        <p class="muted">LeanTeX source:</p>
+        <a class="btn secondary" href="https://github.com/rgrossharv/LeanTeX" target="_blank" rel="noopener">Open github.com/rgrossharv/LeanTeX</a>
+      </article>
+    </section>
+
+    <p class="footer">LeanTeX documentation site • single-file HTML for quick GitHub Pages publishing</p>
+  </main>
+
+  <script>
+    const btn = document.getElementById("copyPageUrl");
+    const msg = document.getElementById("urlMsg");
+    btn.addEventListener("click", async () => {
+      const text = "https://rgrossharv.github.io/<repo-name>/";
+      try {
+        await navigator.clipboard.writeText(text);
+        msg.textContent = "Copied: " + text;
+      } catch (_) {
+        msg.textContent = "URL format: " + text;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -92,27 +92,16 @@ and render both Lean output and diagnostics inside your compiled PDF.
 
 <div class="nav">
 <a href="./index.html">Home</a> |
+<a href="./index.html?view=requirements">Requirements</a> |
 <a href="./index.html?view=examples">Examples</a> |
 <a href="https://github.com/rgrossharv/LeanTeX">GitHub Repository</a>
 </div>
 
 <hr>
 
-<h2 id="requirements">Requirements</h2>
-
-<p>Before installing LeanTeX, make sure your machine has:</p>
-<ul>
-  <li><strong>Python 3.9+</strong> (with <code>pip</code>)</li>
-  <li><strong>Lean 4 + Lake</strong> (for running and checking Lean snippets)</li>
-  <li><strong>A TeX distribution</strong> with <code>latexmk</code>, <code>listings</code>, <code>tcolorbox</code>, and <code>comment</code></li>
-  <li><strong>Git</strong> (to clone the repository)</li>
-</ul>
-
-<p>Optional but recommended for larger examples (such as <code>test4.tex</code>): run <code>lake update</code> and <code>lake exe cache get</code> in <code>examples/minimal</code>.</p>
-
-<hr>
-
 <h2 id="installation">Installation</h2>
+
+<p>Before continuing, make sure you have all required tools installed (see the <a href="./index.html?view=requirements">Requirements</a> tab).</p>
 
 <h3>1) Clone</h3>
 <pre><code>git clone https://github.com/rgrossharv/LeanTeX.git
@@ -191,6 +180,34 @@ For full details, see the
 </div>
 </section>
 
+<section id="requirementsView" hidden>
+<h1>LeanTeX Requirements</h1>
+
+<p>Before installing LeanTeX, make sure your machine has:</p>
+<ul>
+  <li><strong>Python 3.9+</strong> (with <code>pip</code>)</li>
+  <li><strong>Lean 4 + Lake</strong> (for running and checking Lean snippets)</li>
+  <li><strong>A TeX distribution</strong> with <code>latexmk</code>, <code>listings</code>, <code>tcolorbox</code>, and <code>comment</code></li>
+  <li><strong>Git</strong> (to clone the repository)</li>
+</ul>
+
+<p>Optional but recommended for larger examples (such as <code>test4.tex</code>): run <code>lake update</code> and <code>lake exe cache get</code> in <code>examples/minimal</code>.</p>
+
+<div class="nav">
+<a href="./index.html">Home</a> |
+<a href="./index.html?view=examples">Examples</a> |
+<a href="https://github.com/rgrossharv/LeanTeX">GitHub Repository</a>
+</div>
+
+<div class="footer">
+<hr>
+<div class="footer-row">
+  <span>LeanTeX requirements</span>
+  <span class="footer-right">Maintained by <a href="https://github.com/rgrossharv" target="_blank" rel="noopener">Ryland Gross</a></span>
+</div>
+</div>
+</section>
+
 <section id="examplesView" hidden>
 <h1>LeanTeX Examples</h1>
 
@@ -238,10 +255,13 @@ This page shows example source and rendered PDFs from <code>examples/minimal</co
 (function () {
   const params = new URLSearchParams(window.location.search);
   const showExamples = params.get("view") === "examples";
+  const showRequirements = params.get("view") === "requirements";
 
   const homeView = document.getElementById("homeView");
+  const requirementsView = document.getElementById("requirementsView");
   const examplesView = document.getElementById("examplesView");
-  homeView.hidden = showExamples;
+  homeView.hidden = showExamples || showRequirements;
+  requirementsView.hidden = !showRequirements;
   examplesView.hidden = !showExamples;
 
 })();

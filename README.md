@@ -24,7 +24,7 @@ LeanTeX lets you embed Lean 4 snippets directly in LaTeX and render both code an
 - Lean 4 and Lake
 - TeX distribution with `latexmk`, `listings`, `tcolorbox`, `comment`
 
-## Install (End User)
+## Install 
 
 ### 1) Clone
 
@@ -160,7 +160,3 @@ git branch -M main
 git remote add origin https://github.com/<your-org-or-user>/LeanTeX.git
 git push -u origin main
 ```
-
-## License
-
-MIT (see `LICENSE`).

@@ -1,0 +1,23 @@
+\documentclass{article}
+\usepackage[onefile]{leantex}
+
+\title{LeanTeX One-File Mode}
+\author{LeanTeX}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Shared context across blocks}
+
+\begin{lean}[show=both]
+theorem theorem_one : True := by
+  trivial
+\end{lean}
+
+\begin{lean}[show=both]
+example : True := by
+  exact theorem_one
+\end{lean}
+
+\end{document}

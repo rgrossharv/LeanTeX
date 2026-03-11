@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "leantex"
+version = "0.1.0"
+description = "LeanTeX: embed Lean 4 diagnostics and messages in LaTeX PDFs"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "LeanTeX" }]
+license = { text = "MIT" }
+
+[project.scripts]
+leantex = "leantex.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "."}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["leantex*"]

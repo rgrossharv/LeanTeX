@@ -1,0 +1,114 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage[onefile]{leantex}
+\usepackage[margin=0.5in]{geometry}
+\title{Lean Test No. 4: 161 Assignment 4 part 2}
+\author{Ryland Gross}
+\date{February 2026}
+
+\begin{document}
+
+\maketitle
+
+\section{Imports, Variables and Options}
+
+\begin{lean}
+import Mathlib.Tactic
+import Mathlib.Util.Delaborators
+import Mathlib.Data.Real.Basic
+
+set_option warningAsError false
+
+
+variable {α β : Type} (p q : α → Prop) (r : α → β → Prop)
+\end{lean}
+
+\section{Exercise 1}
+
+\begin{lean}
+example : (∀ x, p x) ∧ (∀ x, q x) → ∀ x, p x ∧ q x := by
+  intros h x
+  constructor
+  · exact h.left x
+  exact h.right x
+
+example : (∀ x, p x) ∨ (∀ x, q x) → ∀ x, p x ∨ q x := by
+  intros h x
+  rcases h with h1 | h2
+  · left
+    exact h1 x
+  right
+  exact h2 x
+
+example : (∃ x, ∀ y, r x y) → ∀ y, ∃ x, r x y := by
+  intros h y
+  rcases h with ⟨x, h11⟩
+  use x
+  exact h11 y
+\end{lean}
+
+\section{Some Definitions and Lemmas}
+
+\begin{lean}
+def approaches_at (f : ℝ → ℝ) (b : ℝ) (a : ℝ) :=
+∀ ε > 0, ∃ δ > 0, ∀ x, abs (x - a) < δ → abs (f x - b) < ε
+
+def continuous (f : ℝ → ℝ) := ∀ x, approaches_at f (f x) x
+
+theorem my_continuous_add_right2 {f : ℝ → ℝ} (ctsf : continuous f) (r : ℝ) :
+  continuous (fun x ↦ f x + r) := by
+  intros x ε h
+  have h1 := ctsf x ε h
+  rcases h1 with ⟨δ, h11⟩
+  use δ
+  constructor
+  · exact h11.left
+  intros x_1 h
+  rw[add_sub_add_right_eq_sub]
+  exact h11.right x_1 h
+
+
+-- Since `f x - r` is the same as `f x + (- r)`, the following is an instance
+-- of the previous theorem.
+theorem continuous_sub {f : ℝ → ℝ} (ctsf : continuous f) (r : ℝ) :
+  continuous (fun x ↦ f x - r) :=
+  my_continuous_add_right2 ctsf (-r)
+\end{lean}
+
+\section{Exercise 4 Test}
+
+Here is the intermediate value theorem, we will solve the following problem modulo it
+\begin{lean}
+theorem ivt {f : ℝ → ℝ} {a b : ℝ} (aleb : a ≤ b)
+    (ctsf : continuous f) (hfa : f a < 0) (hfb : 0 < f b) :
+  ∃ x, a ≤ x ∧ x ≤ b ∧ f x = 0 :=
+sorry
+\end{lean}
+
+Now, we actually exhibit a more genral version,
+\begin{lean}
+theorem ivtnolinarith {f : ℝ → ℝ} {a b c : ℝ} (aleb : a ≤ b)
+    (ctsf : continuous f) (hfa : f a < c) (hfb : c < f b) :
+  ∃ x, a ≤ x ∧ x ≤ b ∧ f x = c := by
+  unfold continuous at ctsf
+  unfold approaches_at at ctsf
+  let g := fun x ↦ f x - c
+  have h1 : ∃ x, a ≤ x ∧ x ≤ b ∧ g x = 0 := by
+    have ctsg : continuous g := by
+      apply continuous_sub ctsf
+    apply ivt aleb ctsg
+    · exact sub_neg_of_lt hfa
+    exact sub_pos_of_lt hfb
+  dsimp [g] at h1
+  rcases h1 with ⟨x, h11⟩
+  use x
+  constructor
+  · exact h11.left
+  constructor
+  · exact h11.right.left
+  exact eq_of_sub_eq_zero h11.right.right
+\end{lean}
+
+Now we are done. \textbf{Q.E.D.}
+
+\end{document}

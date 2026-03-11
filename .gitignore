@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
+
+# LeanTeX generated outputs
+examples/minimal/LeanTeX/
+examples/minimal/leantex.generated.tex
+examples/minimal/*.aux
+examples/minimal/*.bbl
+examples/minimal/*.bcf
+examples/minimal/*.blg
+examples/minimal/*.fdb_latexmk
+examples/minimal/*.fls
+examples/minimal/*.log
+examples/minimal/*.out
+examples/minimal/*.pdf
+examples/minimal/*.run.xml
+examples/minimal/*.synctex.gz
+examples/minimal/*.toc
+examples/minimal/*.xdv
+examples/minimal/missfont.log
+examples/minimal/%OUTDIR%/
+
+# Backups
+*~

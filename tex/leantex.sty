@@ -1,0 +1,362 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{leantex}[2026/02/27 LeanTeX package]
+\newif\ifleantexonefile
+\leantexonefilefalse
+\DeclareOption{onefile}{\leantexonefiletrue}
+\DeclareOption{isolated}{\leantexonefilefalse}
+\ProcessOptions\relax
+
+\RequirePackage{etoolbox}
+\RequirePackage{comment}
+\RequirePackage{iftex}
+\RequirePackage{xcolor}
+\RequirePackage{amssymb}
+\RequirePackage{listings}
+\RequirePackage{tcolorbox}
+\ifPDFTeX
+  \newcommand{\leantexmonofont}{\ttfamily}
+\else
+  \RequirePackage{fontspec}
+  \IfFontExistsTF{JuliaMono}{
+    \newfontfamily\leantexmonofont{JuliaMono}[Scale=MatchLowercase]
+  }{
+    \IfFontExistsTF{DejaVu Sans Mono}{
+      \newfontfamily\leantexmonofont{DejaVu Sans Mono}[Scale=MatchLowercase]
+    }{
+      \IfFontExistsTF{Noto Sans Mono}{
+        \newfontfamily\leantexmonofont{Noto Sans Mono}[Scale=MatchLowercase]
+      }{
+        \newfontfamily\leantexmonofont{Latin Modern Mono}[Scale=MatchLowercase]
+      }
+    }
+  }
+\fi
+
+\newcounter{leantexblock}
+\newcommand{\leantexenableonefile}{\global\leantexonefiletrue}
+\newcommand{\leantexdisableonefile}{\global\leantexonefilefalse}
+
+% Lean-inspired palette for listings.
+\definecolor{leanKeyword}{HTML}{005A9C}
+\definecolor{leanTactic}{HTML}{7A3E9D}
+\definecolor{leanType}{HTML}{1E6B45}
+\definecolor{leanCommand}{HTML}{8A4B0F}
+\definecolor{leanComment}{HTML}{6B7280}
+\definecolor{leanString}{HTML}{A13E00}
+\newcommand{\leantex@defaultcodesize}{\small}
+\newcommand{\leantexsetdefaultcodesize}[1]{\renewcommand{\leantex@defaultcodesize}{#1}}
+\newcommand{\leantex@defaultoutsize}{\small}
+\newcommand{\leantexsetdefaultoutputsize}[1]{\renewcommand{\leantex@defaultoutsize}{#1}}
+\newcommand{\leantex@codeextras}{}
+\newcommand{\leantex@outextras}{}
+\newcommand{\leantexsetcodestyle}[1]{\renewcommand{\leantex@codeextras}{,#1}}
+\newcommand{\leantexsetoutputstyle}[1]{\renewcommand{\leantex@outextras}{,#1}}
+\newcommand{\leantexunicode}[1]{%
+  \ifPDFTeX
+    U+#1%
+  \else
+    {\leantexmonofont\char"#1}%
+  \fi
+}
+\newcommand{\leantexmathcmdor}[2]{%
+  \ifcsname #1\endcsname
+    \ensuremath{\csname #1\endcsname}%
+  \else
+    \leantexunicode{#2}%
+  \fi
+}
+\newcommand{\leantexunicodemapped}[1]{%
+  \ifcsname leantex@unicode@#1\endcsname
+    \csname leantex@unicode@#1\endcsname
+  \else
+    \leantexunicode{#1}%
+  \fi
+}
+\newcommand{\leantexsetdynamicliterate}[1]{%
+  \lstset{
+    literate=
+      {U+22A2}{{$\vdash$}}6
+      {U+2192}{{$\to$}}6
+      {U+2190}{{$\leftarrow$}}6
+      {U+2194}{{$\leftrightarrow$}}6
+      {U+2200}{{$\forall$}}6
+      {U+2203}{{$\exists$}}6
+      {U+2227}{{$\land$}}6
+      {U+2228}{{$\lor$}}6
+      {U+00AC}{{$\neg$}}6
+      {U+22A5}{{$\bot$}}6
+      {U+22A4}{{$\top$}}6
+      {U+2264}{{$\le$}}6
+      {U+2265}{{$\ge$}}6
+      {U+2260}{{$\neq$}}6
+      {U+2208}{{$\in$}}6
+      {U+2209}{{$\notin$}}6
+      {U+2286}{{$\subseteq$}}6
+      {U+2282}{{$\subset$}}6
+      {U+222A}{{$\cup$}}6
+      {U+2229}{{$\cap$}}6
+      {U+2218}{{$\circ$}}6
+      {U+00B7}{{$\cdot$}}6
+      {U+2016}{{$\Vert$}}6
+      {U+27E8}{{$\langle$}}6
+      {U+27E9}{{$\rangle$}}6
+      {U+27EA}{{$\langle\!\langle$}}6
+      {U+27EB}{{$\rangle\!\rangle$}}6
+      {U+2713}{{\textcolor{blue!70!black}{\raisebox{0.12ex}{\tiny$\checkmark$}}}}6
+      {U+2717}{{\hphantom{\textcolor{blue!70!black}{\raisebox{0.12ex}{\tiny$\checkmark$}}}}}6
+      {U+03B1}{{$\alpha$}}6
+      {U+03B2}{{$\beta$}}6
+      {U+03B3}{{$\gamma$}}6
+      {U+03B4}{{$\delta$}}6
+      {U+03B5}{{$\varepsilon$}}6
+      {U+03B6}{{$\zeta$}}6
+      {U+03B7}{{$\eta$}}6
+      {U+03B8}{{$\theta$}}6
+      {U+03B9}{{$\iota$}}6
+      {U+03BA}{{$\kappa$}}6
+      {U+03BB}{{$\lambda$}}6
+      {U+03BC}{{$\mu$}}6
+      {U+03BD}{{$\nu$}}6
+      {U+03BE}{{$\xi$}}6
+      {U+03C0}{{$\pi$}}6
+      {U+03C1}{{$\rho$}}6
+      {U+03C3}{{$\sigma$}}6
+      {U+03C4}{{$\tau$}}6
+      {U+03C5}{{$\upsilon$}}6
+      {U+03C6}{{$\phi$}}6
+      {U+03D5}{{$\varphi$}}6
+      {U+03C7}{{$\chi$}}6
+      {U+03C8}{{$\psi$}}6
+      {U+03C9}{{$\omega$}}6
+      {U+0393}{{$\Gamma$}}6
+      {U+0394}{{$\Delta$}}6
+      {U+0398}{{$\Theta$}}6
+      {U+039B}{{$\Lambda$}}6
+      {U+039E}{{$\Xi$}}6
+      {U+03A0}{{$\Pi$}}6
+      {U+03A3}{{$\Sigma$}}6
+      {U+03A6}{{$\Phi$}}6
+      {U+03A8}{{$\Psi$}}6
+      {U+03A9}{{$\Omega$}}6
+      {U+2115}{{$\mathrm{N}$}}6
+      {U+2124}{{$\mathrm{Z}$}}6
+      {U+211A}{{$\mathrm{Q}$}}6
+      {U+211D}{{$\mathrm{R}$}}6
+      #1
+  }%
+}
+\newcommand{\leantexregisterunicode}[2]{%
+  % Backward-compat shim for older generated files.
+  \leantexsetdynamicliterate{{U+#1}{{\leantexunicodemapped{#1}}}#2}%
+}
+
+\lstdefinelanguage{lean}{
+  alsoletter={\#,'?},
+  morekeywords={
+    theorem,def,lemma,example,axiom,abbrev,opaque,notation,macro,where,by,match,if,then,else,
+    let,have,show,from,fun,forall,exists,do,return,mutual,unsafe,termination_by,decreasing_by,
+    structure,class,instance,deriving,inductive,namespace,section,end,open,export,attribute,set_option,
+    import,local,scoped,in,variable,variables,universe,universes,noncomputable
+  },
+  morekeywords=[2]{
+    intro,intros,exact,refine,apply,constructor,cases,cases',case,induction,revert,rename_i,subst,
+    simp,simpa,simp_all,rw,nth_rewrite,change,conv,ring,linarith,nlinarith,omega,positivity,
+    decide,aesop,trivial,tauto,assumption,contradiction,left,right,first,next,repeat,all_goals,
+    any_goals,try,guard_hyp,guard_target,rfl,rcases,obtain,calc,simpa?,simp?
+  },
+  morekeywords=[3]{
+    Type,Prop,Sort,True,False,Nat,Int,Rat,Real,Bool,String,List,Option,Finset,Set
+  },
+  morekeywords=[4]{\#check,\#eval,\#print,\#reduce,\#synth,\#guard,\#help,\#where},
+  otherkeywords={:=,=>,->,<-,|},
+  sensitive=true,
+  morecomment=[l]{--},
+  morecomment=[s]{/-}{-/},
+  morestring=[b]"
+}
+
+\leantexsetdynamicliterate{}
+
+\lstdefinestyle{leantexcode}{
+  language=lean,
+  basicstyle=\leantexmonofont\small,
+  keywordstyle=\bfseries\color{leanKeyword},
+  keywordstyle=[2]\color{leanTactic},
+  keywordstyle=[3]\color{leanType},
+  keywordstyle=[4]\color{leanCommand},
+  commentstyle=\itshape\color{leanComment},
+  stringstyle=\color{leanString},
+  rulecolor=\color{black!20},
+  numbers=none,
+  xleftmargin=0.6em,
+  framexleftmargin=0.3em,
+  framesep=3pt,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  frame=single,
+  framerule=0.4pt,
+  breaklines=true
+}
+
+\lstdefinestyle{leantexout}{
+  basicstyle=\leantexmonofont\small,
+  rulecolor=\color{black!20},
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  frame=single,
+  framerule=0.4pt,
+  breaklines=true
+}
+
+\newif\ifleantexautobuild
+\leantexautobuildtrue
+\newcommand{\leantex@buildcommand}{python3 -m leantex build "\jobname.tex" --no-latexmk}
+\newcommand{\leantexsetbuildcommand}[1]{\renewcommand{\leantex@buildcommand}{#1}}
+\newcommand{\leantexenableautobuild}{\leantexautobuildtrue}
+\newcommand{\leantexdisableautobuild}{\leantexautobuildfalse}
+\newif\ifleantex@loadedgenerated
+\leantex@loadedgeneratedfalse
+\newcommand{\leantex@autobuildgenerated}{%
+  \begingroup
+    \newif\ifleantex@shellescape
+    \leantex@shellescapefalse
+    \ifdefined\pdfshellescape
+      \ifnum\pdfshellescape=1\relax
+        \leantex@shellescapetrue
+      \fi
+    \else
+      \ifdefined\shellescape
+        \ifnum\shellescape=1\relax
+          \leantex@shellescapetrue
+        \fi
+      \fi
+    \fi
+    \ifleantex@shellescape
+      \immediate\write18{\leantex@buildcommand}%
+    \else
+      \PackageWarningNoLine{leantex}{%
+        leantex.generated.tex missing and unrestricted shell-escape is not enabled.\MessageBreak
+        Run `leantex build \jobname.tex` (or use latexmk hook) first%
+      }%
+    \fi
+  \endgroup
+}
+\newcommand{\leantexloadgenerated}{%
+  \ifleantex@loadedgenerated\else
+    \ifcsname leantex@generatedloaded\endcsname
+      \global\leantex@loadedgeneratedtrue
+    \fi
+  \fi
+  \ifleantex@loadedgenerated\else
+    \IfFileExists{leantex.generated.tex}{}{%
+      \ifleantexautobuild
+        \leantex@autobuildgenerated
+      \fi
+    }%
+    \InputIfFileExists{leantex.generated.tex}{%
+      \global\leantex@loadedgeneratedtrue
+    }{%
+      \PackageWarningNoLine{leantex}{%
+        leantex.generated.tex not found.\MessageBreak
+        Lean blocks will show "Missing generated data" placeholders%
+      }%
+    }%
+  \fi
+}
+\AtBeginDocument{\leantexloadgenerated}
+
+\newcommand{\leantex@get}[2]{%
+  \ifcsname leantex@#1@#2\endcsname
+    \csname leantex@#1@#2\endcsname
+  \else
+    \relax
+  \fi
+}
+
+\newcommand{\leantex@render}[1]{%
+  \ifcsname leantex@codepath@#1\endcsname
+    \edef\lltshow{\leantex@get{show}{#1}}%
+    \edef\lltcodepath{\leantex@get{codepath}{#1}}%
+    \edef\lltcoderawpath{\leantex@get{coderawpath}{#1}}%
+    \edef\lltoutpath{\leantex@get{outpath}{#1}}%
+    \edef\lltoutrawpath{\leantex@get{outrawpath}{#1}}%
+    \edef\llthaserror{\leantex@get{haserror}{#1}}%
+    \def\lltcodeviewpath{\lltcodepath}%
+    \def\lltoutviewpath{\lltoutpath}%
+    \ifPDFTeX\else
+      \ifcsname leantex@coderawpath@#1\endcsname
+        \edef\lltcodeviewpath{\lltcoderawpath}%
+      \fi
+      \ifcsname leantex@outrawpath@#1\endcsname
+        \edef\lltoutviewpath{\lltoutrawpath}%
+      \fi
+    \fi
+    \def\lltcodesizecmd{\leantex@defaultcodesize}%
+    \ifcsname leantex@codesize@#1\endcsname
+      \expandafter\let\expandafter\lltcodesizecmd\csname leantex@codesize@#1\endcsname
+    \fi
+    \def\lltoutsizecmd{\leantex@defaultoutsize}%
+    \ifcsname leantex@outsize@#1\endcsname
+      \expandafter\let\expandafter\lltoutsizecmd\csname leantex@outsize@#1\endcsname
+    \fi
+
+    \ifdefstrequal{\lltshow}{output}{}{%
+      \begin{tcolorbox}[colback=gray!2!white,colframe=black!35,title=Lean Code]
+        \lstinputlisting[style=leantexcode,basicstyle=\leantexmonofont\lltcodesizecmd\leantex@codeextras]{\lltcodeviewpath}
+      \end{tcolorbox}
+    }%
+
+    \ifdefstrequal{\lltshow}{code}{}{%
+      \ifdefstrequal{\llthaserror}{1}{%
+        \begin{tcolorbox}[colback=red!2!white,colframe=red!60!black,title=Infoview Output]
+          \lstinputlisting[style=leantexout,basicstyle=\leantexmonofont\lltoutsizecmd\leantex@outextras]{\lltoutviewpath}
+        \end{tcolorbox}
+      }{%
+        \begin{tcolorbox}[colback=blue!2!white,colframe=blue!45!black,title=Infoview Output]
+          \lstinputlisting[style=leantexout,basicstyle=\leantexmonofont\lltoutsizecmd\leantex@outextras]{\lltoutviewpath}
+        \end{tcolorbox}
+      }%
+    }%
+  \else
+    \begin{tcolorbox}[colback=yellow!5!white,colframe=yellow!50!black,title=LeanTeX]
+      Missing generated data for block #1. Run \texttt{leantex build} first.
+    \end{tcolorbox}
+  \fi
+}
+
+\newcommand{\totalinfoview}[1][Extracted Lean Infoview]{%
+  \ifcsname leantex@extractedoutpath\endcsname
+    \edef\lltoutviewpath{\csname leantex@extractedoutpath\endcsname}%
+    \edef\llthaserror{\csname leantex@extractedhaserror\endcsname}%
+    \ifPDFTeX\else
+      \ifcsname leantex@extractedoutrawpath\endcsname
+        \edef\lltoutviewpath{\csname leantex@extractedoutrawpath\endcsname}%
+      \fi
+    \fi
+    \def\lltoutsizecmd{\leantex@defaultoutsize}%
+    \ifdefstrequal{\llthaserror}{1}{%
+      \begin{tcolorbox}[colback=red!2!white,colframe=red!60!black,title=#1]
+        \lstinputlisting[style=leantexout,basicstyle=\leantexmonofont\lltoutsizecmd\leantex@outextras]{\lltoutviewpath}
+      \end{tcolorbox}
+    }{%
+      \begin{tcolorbox}[colback=blue!2!white,colframe=blue!45!black,title=#1]
+        \lstinputlisting[style=leantexout,basicstyle=\leantexmonofont\lltoutsizecmd\leantex@outextras]{\lltoutviewpath}
+      \end{tcolorbox}
+    }%
+  \else
+    \begin{tcolorbox}[colback=yellow!5!white,colframe=yellow!50!black,title=LeanTeX]
+      Missing extracted infoview data. Run \texttt{leantex build} first.
+    \end{tcolorbox}
+  \fi
+}
+\let\leantexshowextractedinfoview\totalinfoview
+
+\newenvironment{lean}[1][]{%
+  \stepcounter{leantexblock}%
+  \leantex@render{\arabic{leantexblock}}%
+  \comment
+}{%
+  \endcomment
+}

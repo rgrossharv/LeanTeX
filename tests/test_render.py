@@ -2,8 +2,6 @@ import unittest
 
 from leantex.models import LeanMessage
 from leantex.render import (
-    CHECKMARK_TOKEN,
-    NO_CHECKMARK_TOKEN,
     _annotate_code_for_display,
     format_messages,
 )
@@ -46,7 +44,7 @@ class RenderTests(unittest.TestCase):
         out = format_messages(msgs)
         self.assertIn("=== Infoview State ===", out)
 
-    def test_adds_checkmarks_for_typechecked_declarations(self) -> None:
+    def test_preserves_code_without_checkmarks(self) -> None:
         code = "\n".join(
             [
                 "example : 1 + 1 = 2 := by rfl",
@@ -64,64 +62,8 @@ class RenderTests(unittest.TestCase):
                 text="unknown identifier '?h'",
             )
         ]
-        annotated = _annotate_code_for_display(code, msgs).splitlines()
-
-        self.assertTrue(annotated[0].startswith(CHECKMARK_TOKEN))
-        self.assertTrue(annotated[1].startswith(NO_CHECKMARK_TOKEN))
-        self.assertTrue(annotated[2].startswith(NO_CHECKMARK_TOKEN))
-        self.assertTrue(annotated[3].startswith(CHECKMARK_TOKEN))
-
-    def test_sorry_warning_suppresses_checkmark(self) -> None:
-        code = "\n".join(
-            [
-                "example : True := by trivial",
-                "example : False := by sorry",
-            ]
-        )
-        msgs = [
-            LeanMessage(
-                severity="warning",
-                line=2,
-                col=1,
-                source="plain",
-                text="declaration uses `sorry`",
-            )
-        ]
-        annotated = _annotate_code_for_display(code, msgs).splitlines()
-        self.assertTrue(annotated[0].startswith(CHECKMARK_TOKEN))
-        self.assertTrue(annotated[1].startswith(NO_CHECKMARK_TOKEN))
-
-    def test_any_warning_suppresses_checkmark(self) -> None:
-        code = "\n".join(
-            [
-                "example : True := by",
-                "  simp",
-                "example : True := by trivial",
-            ]
-        )
-        msgs = [
-            LeanMessage(
-                severity="warning",
-                line=2,
-                col=3,
-                source="infoview-message",
-                text="[infoview message] style warning",
-            )
-        ]
-        annotated = _annotate_code_for_display(code, msgs).splitlines()
-        self.assertTrue(annotated[0].startswith(NO_CHECKMARK_TOKEN))
-        self.assertTrue(annotated[2].startswith(CHECKMARK_TOKEN))
-
-    def test_definitions_do_not_get_checkmarks(self) -> None:
-        code = "\n".join(
-            [
-                "def foo : Nat := 3",
-                "example : foo = 3 := by rfl",
-            ]
-        )
-        annotated = _annotate_code_for_display(code, []).splitlines()
-        self.assertTrue(annotated[0].startswith(NO_CHECKMARK_TOKEN))
-        self.assertTrue(annotated[1].startswith(CHECKMARK_TOKEN))
+        annotated = _annotate_code_for_display(code, msgs)
+        self.assertEqual(annotated, code)
 
     def test_infoview_goals_mode_only_shows_goals_accomplished(self) -> None:
         msgs = [

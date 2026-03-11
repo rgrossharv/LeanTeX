@@ -20,7 +20,7 @@ IMPORT_STMT_RE = re.compile(r"^\s*import\s+(?P<mods>.+?)\s*$")
 UNKNOWN_MODULE_RE = re.compile(r"unknown module prefix ['`](?P<mod>[A-Za-z0-9_.]+)['`]", re.IGNORECASE)
 NO_DIR_MODULE_RE = re.compile(r"No directory ['`](?P<mod>[A-Za-z0-9_.]+)['`] or file", re.IGNORECASE)
 MODULE_TOKEN_RE = re.compile(r"^[A-Za-z0-9_.]+$")
-CACHE_SCHEMA = 1
+CACHE_SCHEMA = 2
 WORKSPACE_MANIFEST = ".leantex-workspace.json"
 WORKSPACE_FIXED_NAMES = {
     ".lake",

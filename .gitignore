@@ -19,6 +19,8 @@ dist/
 .idea/
 
 # LeanTeX generated outputs
+examples/minimal/.lake/packages/
+examples/minimal/.lake/config/*/lakefile.olean.lock
 examples/minimal/LeanTeX/
 examples/minimal/leantex.generated.tex
 examples/minimal/*.aux

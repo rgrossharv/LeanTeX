@@ -10,12 +10,6 @@ from .io_utils import write_text_if_changed
 from .models import LeanMessage, Snippet
 
 INFOVIEW_STATE_LINE_LIMIT = 4
-DECL_HEAD_RE = re.compile(
-    r"^\s*(?:(?:private|protected)\s+)?"
-    r"(theorem|lemma|example|corollary)\b"
-)
-CHECKMARK_TOKEN = "U+2713U+2713 "
-NO_CHECKMARK_TOKEN = "U+2717U+2717 "
 STATIC_LITERATE_CODEPOINTS = {
     "22A2",
     "2192",
@@ -40,8 +34,6 @@ STATIC_LITERATE_CODEPOINTS = {
     "2218",
     "00B7",
     "2016",
-    "2713",
-    "2717",
     "27E8",
     "27E9",
     "27EA",
@@ -368,60 +360,9 @@ def _normalize_infoview_mode(mode: str) -> str:
     return "auto"
 
 
-def _declaration_start_lines(code_lines: list[str]) -> list[int]:
-    starts: list[int] = []
-    for line_no, line in enumerate(code_lines, start=1):
-        if DECL_HEAD_RE.match(line):
-            starts.append(line_no)
-    return starts
-
-
-def _is_blocking_diagnostic(msg: LeanMessage) -> bool:
-    # Infoview state snapshots are not diagnostics.
-    if msg.source == "infoview":
-        return False
-    # Only completely clean declarations (no warnings/errors) get checkmarks.
-    return msg.severity in {"error", "warning"}
-
-
-def _blocking_diagnostic_lines(messages: list[LeanMessage]) -> set[int]:
-    out: set[int] = set()
-    for msg in messages:
-        if not _is_blocking_diagnostic(msg):
-            continue
-        if msg.line is None:
-            continue
-        start = max(1, msg.line)
-        end = msg.end_line if msg.end_line is not None else msg.line
-        if end < start:
-            end = start
-        for line_no in range(start, end + 1):
-            out.add(line_no)
-    return out
-
-
-def _checked_declaration_heads(code_lines: list[str], messages: list[LeanMessage]) -> set[int]:
-    starts = _declaration_start_lines(code_lines)
-    if not starts:
-        return set()
-    error_lines = _blocking_diagnostic_lines(messages)
-    checked: set[int] = set()
-    for idx, start in enumerate(starts):
-        end = starts[idx + 1] - 1 if idx + 1 < len(starts) else len(code_lines)
-        has_error = any(start <= err_line <= end for err_line in error_lines)
-        if not has_error:
-            checked.add(start)
-    return checked
-
-
-def _annotate_code_for_display(code: str, messages: list[LeanMessage]) -> str:
-    code_lines = code.splitlines() if code else [""]
-    checked_heads = _checked_declaration_heads(code_lines, messages)
-    out_lines: list[str] = []
-    for line_no, line in enumerate(code_lines, start=1):
-        marker = CHECKMARK_TOKEN if line_no in checked_heads else NO_CHECKMARK_TOKEN
-        out_lines.append(f"{marker}{line}")
-    return "\n".join(out_lines)
+def _annotate_code_for_display(code: str, _messages: list[LeanMessage]) -> str:
+    # Keep snippet source unchanged; do not inject checkmark markers.
+    return code
 
 
 def format_messages(

@@ -1,10 +1,20 @@
-TEX=minimal.tex
+PYTHON ?= python3
+LEANTEX = PYTHONPATH=../.. $(PYTHON) -m leantex
+TEX ?= minimal.tex
 
-all:
-	PYTHONPATH=../.. python3 -m leantex build $(TEX)
+all: build
+
+build:
+	$(LEANTEX) build $(TEX)
 
 build-no-pdf:
-	PYTHONPATH=../.. python3 -m leantex build $(TEX) --no-latexmk
+	$(LEANTEX) build $(TEX) --no-latexmk
+
+minimal:
+	$(LEANTEX) build minimal.tex
+
+test4:
+	$(LEANTEX) build test4.tex
 
 clean:
 	latexmk -C $(TEX)

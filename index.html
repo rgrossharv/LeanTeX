@@ -1,260 +1,239 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>LeanTeX - Install & Quick Start</title>
-  <meta name="description" content="LeanTeX installation guide and quick start for GitHub Pages.">
-  <style>
-    :root {
-      --bg: #f6f4ef;
-      --ink: #161616;
-      --muted: #5e5b57;
-      --card: #fffdf8;
-      --line: #ddd6c8;
-      --brand: #8a5a00;
-      --brand-2: #1b6a4f;
-      --code-bg: #1d1d1d;
-      --code-ink: #f5f5f5;
-      --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-      --radius: 16px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LeanTeX</title>
+<meta name="description" content="LeanTeX lets you embed Lean 4 code snippets directly in LaTeX and render Lean output and diagnostics in your PDF.">
 
-    * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; }
-    body {
-      font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
-      color: var(--ink);
-      background:
-        radial-gradient(1200px 500px at -10% -20%, #ffe7b9 0%, transparent 70%),
-        radial-gradient(1200px 500px at 120% -10%, #c8f2e4 0%, transparent 70%),
-        var(--bg);
-      line-height: 1.5;
-    }
+<style>
+body {
+    background: #f8f8f2;
+    color: #222;
+    font-family: Georgia, "Times New Roman", serif;
+    max-width: 880px;
+    margin: auto;
+    padding: 40px 24px;
+    line-height: 1.6;
+}
 
-    .wrap {
-      width: min(1000px, 92vw);
-      margin: 0 auto;
-      padding: 40px 0 72px;
-    }
+h1, h2, h3 {
+    font-family: "Times New Roman", serif;
+}
 
-    .hero {
-      background: linear-gradient(140deg, #fffdf8, #f6efe3);
-      border: 1px solid var(--line);
-      border-radius: calc(var(--radius) + 6px);
-      box-shadow: var(--shadow);
-      padding: 30px;
-      animation: rise 600ms ease both;
-    }
+h1 {
+    font-size: 2.5em;
+    margin-bottom: 0.2em;
+}
 
-    .kicker {
-      display: inline-block;
-      font-size: 12px;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: var(--brand);
-      background: #fff4d9;
-      border: 1px solid #f1ddb2;
-      border-radius: 999px;
-      padding: 6px 10px;
-      margin-bottom: 12px;
-    }
+h2 {
+    margin-top: 2em;
+}
 
-    h1 {
-      margin: 0 0 10px;
-      font-size: clamp(2rem, 4.4vw, 3.3rem);
-      line-height: 1.1;
-      letter-spacing: -0.02em;
-    }
+code {
+    background: #eeeeee;
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
 
-    .sub {
-      margin: 0;
-      font-size: 1.05rem;
-      color: var(--muted);
-      max-width: 70ch;
-    }
+pre {
+    background: #eeeeee;
+    padding: 15px;
+    overflow-x: auto;
+    border-left: 4px solid #888;
+}
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-      gap: 16px;
-      margin-top: 18px;
-    }
+a {
+    color: #0645ad;
+    text-decoration: underline;
+}
 
-    .card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 18px 18px 14px;
-      box-shadow: var(--shadow);
-      animation: rise 700ms ease both;
-    }
+a:hover {
+    color: #0b0080;
+}
 
-    .card h2, .card h3 {
-      margin: 0 0 8px;
-      line-height: 1.2;
-    }
+.nav {
+    margin-bottom: 24px;
+}
 
-    .card h2 { font-size: 1.35rem; }
-    .card h3 { font-size: 1.05rem; }
+.footer {
+    margin-top: 60px;
+    font-size: 0.9em;
+    color: #555;
+}
 
-    .muted { color: var(--muted); }
+.footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+}
 
-    code.inline {
-      background: #f3eee3;
-      padding: 1px 6px;
-      border-radius: 6px;
-      border: 1px solid #e6ddcc;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: .95em;
-    }
+.footer-right {
+    text-align: right;
+}
 
-    pre {
-      margin: 10px 0 4px;
-      background: var(--code-bg);
-      color: var(--code-ink);
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid #3a3a3a;
-      overflow: auto;
-      font-size: .93rem;
-      line-height: 1.45;
-    }
-
-    .btn {
-      display: inline-block;
-      margin-top: 8px;
-      border: 1px solid #d6c9af;
-      background: #fff4df;
-      color: #4f3300;
-      border-radius: 10px;
-      padding: 8px 12px;
-      text-decoration: none;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .btn.secondary {
-      background: #ecf8f3;
-      border-color: #c9e9dd;
-      color: #184f3c;
-    }
-
-    ol, ul { margin: 8px 0 0 18px; padding: 0; }
-
-    .footer {
-      margin-top: 20px;
-      font-size: .93rem;
-      color: var(--muted);
-      text-align: center;
-    }
-
-    @keyframes rise {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+.example-item {
+    margin: 20px 0 28px;
+}
+</style>
 </head>
+
 <body>
-  <main class="wrap">
-    <section class="hero">
-      <span class="kicker">LeanTeX Docs</span>
-      <h1>LeanTeX Installation & Quick Start</h1>
-      <p class="sub">LeanTeX lets you write Lean 4 blocks in LaTeX and render code + diagnostics into your PDF. This page is a single-file site for GitHub Pages.</p>
-    </section>
 
-    <section class="grid">
-      <article class="card">
-        <h2>1. Get LeanTeX</h2>
-        <p class="muted">Clone the repo and enter the project folder.</p>
-        <pre><code>git clone https://github.com/rgrossharv/LeanTeX.git
+<section id="homeView">
+<h1>LeanTeX</h1>
+
+<p>
+LeanTeX lets you embed <strong>Lean 4 code snippets directly in LaTeX</strong>
+and render both Lean output and diagnostics inside your compiled PDF.
+</p>
+
+<div class="nav">
+<a href="./index.html">Home</a> |
+<a href="./index.html?view=examples">Examples Page</a> |
+<a href="https://github.com/rgrossharv/LeanTeX">GitHub Repository</a> |
+<a href="#installation">Installation</a> |
+<a href="#usage">Usage</a>
+</div>
+
+<hr>
+
+<h2 id="installation">Installation</h2>
+
+<h3>1) Clone</h3>
+<pre><code>git clone https://github.com/rgrossharv/LeanTeX.git
 cd LeanTeX</code></pre>
-      </article>
 
-      <article class="card">
-        <h2>2. Install Python Package</h2>
-        <p class="muted">Normal install:</p>
-        <pre><code>python3 -m pip install .</code></pre>
-        <p class="muted">Dev/editable install:</p>
-        <pre><code>python3 -m pip install -e .</code></pre>
-        <p class="muted">If older pip errors on <code class="inline">bdist_wheel</code>:</p>
-        <pre><code>python3 -m pip install --upgrade pip setuptools wheel</code></pre>
-      </article>
+<h3>2) Install Python package</h3>
+<pre><code>python3 -m pip install .</code></pre>
 
-      <article class="card">
-        <h2>3. Install TeX Package</h2>
-        <p class="muted">One-time install to your TeX tree:</p>
-        <pre><code>leantex install-tex</code></pre>
-        <p class="muted">This installs <code class="inline">leantex.sty</code>, <code class="inline">leantexonefile.sty</code>, and updates <code class="inline">~/.latexmkrc</code>.</p>
-      </article>
+Developer install:
+<pre><code>python3 -m pip install -e .</code></pre>
 
-      <article class="card">
-        <h2>4. Minimal TeX Setup</h2>
-        <pre><code>\documentclass{article}
-\usepackage[margin=0.5in]{geometry}
-\usepackage{leantex}
-\begin{document}
-\begin{lean}
+If older pip errors on <code>bdist_wheel</code>:
+<pre><code>python3 -m pip install --upgrade pip setuptools wheel</code></pre>
+
+<h3>3) Install TeX package files</h3>
+<pre><code>leantex install-tex</code></pre>
+
+<hr>
+
+<h2 id="usage">Quick Start</h2>
+
+In your document:
+<pre><code>\usepackage{leantex}</code></pre>
+
+Build once:
+<pre><code>leantex build path/to/file.tex</code></pre>
+
+Watch mode:
+<pre><code>leantex watch path/to/file.tex</code></pre>
+
+Without global install:
+<pre><code>PYTHONPATH=. python3 -m leantex build path/to/file.tex</code></pre>
+
+<h2>LaTeX Usage</h2>
+
+<pre><code>\begin{lean}[name=demo,show=both]
 #check Nat.succ
-\end{lean}
-\end{document}</code></pre>
-      </article>
+\end{lean}</code></pre>
 
-      <article class="card">
-        <h2>5. Build Commands</h2>
-        <p class="muted">Direct build:</p>
-        <pre><code>leantex build path/to/file.tex</code></pre>
-        <p class="muted">Watch mode:</p>
-        <pre><code>leantex watch path/to/file.tex</code></pre>
-        <p class="muted">Module mode (without global install):</p>
-        <pre><code>PYTHONPATH=. python3 -m leantex build path/to/file.tex</code></pre>
-      </article>
+Shared-context mode:
+<pre><code>\usepackage[onefile]{leantex}
+# or
+\usepackage{leantexonefile}</code></pre>
 
-      <article class="card">
-        <h2>Troubleshooting</h2>
-        <ul>
-          <li>If PDF shows “Missing generated data”, run <code class="inline">leantex build file.tex --no-latexmk</code> first.</li>
-          <li>Ensure your file uses <code class="inline">\usepackage[margin=0.5in]{geometry}</code>, not reversed option syntax.</li>
-          <li>Run <code class="inline">kpsewhich leantex.sty</code> to confirm TeX can find the style.</li>
-          <li>If multiple hooks exist in <code class="inline">~/.latexmkrc</code>, keep the LeanTeX one active.</li>
-        </ul>
-      </article>
+<hr>
 
-      <article class="card">
-        <h3>GitHub Pages Setup (No Custom Domain)</h3>
-        <ol>
-          <li>Create a new GitHub repo for this site.</li>
-          <li>Drag and drop this <code class="inline">index.html</code> into the repo root.</li>
-          <li>Go to <code class="inline">Settings -> Pages</code>.</li>
-          <li>Source: <code class="inline">Deploy from a branch</code>, branch <code class="inline">main</code>, folder <code class="inline">/root</code>.</li>
-          <li>Save and wait for publish.</li>
-        </ol>
-        <button class="btn" id="copyPageUrl">Copy expected URL format</button>
-        <p id="urlMsg" class="muted"></p>
-      </article>
+<h2 id="examples">Examples</h2>
 
-      <article class="card">
-        <h3>Project Repo</h3>
-        <p class="muted">LeanTeX source:</p>
-        <a class="btn secondary" href="https://github.com/rgrossharv/LeanTeX" target="_blank" rel="noopener">Open github.com/rgrossharv/LeanTeX</a>
-      </article>
-    </section>
+<p>
+Examples live in
+<a href="https://github.com/rgrossharv/LeanTeX/tree/main/examples/minimal">examples/minimal</a>.
+Use the dedicated examples page to view source and output:
+<a href="./index.html?view=examples">open examples page</a>.
+</p>
 
-    <p class="footer">LeanTeX documentation site • single-file HTML for quick GitHub Pages publishing</p>
-  </main>
+<ul>
+<li><code>minimal.tex</code> — small demo</li>
+<li><code>test4.tex</code> — larger sample using Mathlib imports</li>
+</ul>
 
-  <script>
-    const btn = document.getElementById("copyPageUrl");
-    const msg = document.getElementById("urlMsg");
-    btn.addEventListener("click", async () => {
-      const text = "https://rgrossharv.github.io/<repo-name>/";
-      try {
-        await navigator.clipboard.writeText(text);
-        msg.textContent = "Copied: " + text;
-      } catch (_) {
-        msg.textContent = "URL format: " + text;
-      }
-    });
-  </script>
+<hr>
+
+<h2>Documentation</h2>
+
+<p>
+For full details, see the
+<a href="https://github.com/rgrossharv/LeanTeX#readme">README</a>.
+</p>
+
+<div class="footer">
+<hr>
+<div class="footer-row">
+  <span>LeanTeX — Public Domain / The Unlicense</span>
+  <span class="footer-right">Maintained by <a href="https://github.com/rgrossharv" target="_blank" rel="noopener">Ryland Gross</a></span>
+</div>
+</div>
+</section>
+
+<section id="examplesView" hidden>
+<h1>LeanTeX Examples</h1>
+
+<p>
+This page shows example source and rendered PDFs from <code>examples/minimal</code>.
+</p>
+
+<div class="nav">
+<a href="./index.html">Home</a> |
+<a href="https://github.com/rgrossharv/LeanTeX/tree/main/examples/minimal">examples/minimal on GitHub</a>
+</div>
+
+<hr>
+
+<div class="example-item" id="minimal">
+  <h2>minimal.tex</h2>
+  <ul>
+    <li><a href="https://raw.githubusercontent.com/rgrossharv/LeanTeX/main/examples/minimal/minimal.tex" target="_blank" rel="noopener">View source text (raw minimal.tex)</a></li>
+    <li><a href="https://github.com/rgrossharv/LeanTeX/blob/main/examples/minimal/minimal.tex" target="_blank" rel="noopener">View source on GitHub</a></li>
+    <li><a href="./examples/minimal/minimal.pdf">Open compiled PDF (minimal.pdf)</a></li>
+  </ul>
+</div>
+
+<hr>
+
+<div class="example-item" id="test4">
+  <h2>test4.tex</h2>
+  <ul>
+    <li><a href="https://raw.githubusercontent.com/rgrossharv/LeanTeX/main/examples/minimal/test4.tex" target="_blank" rel="noopener">View source text (raw test4.tex)</a></li>
+    <li><a href="https://github.com/rgrossharv/LeanTeX/blob/main/examples/minimal/test4.tex" target="_blank" rel="noopener">View source on GitHub</a></li>
+    <li><a href="./examples/minimal/test4.pdf">Open compiled PDF (test4.pdf)</a></li>
+  </ul>
+</div>
+
+<div class="footer">
+<hr>
+<div class="footer-row">
+  <span>LeanTeX examples page</span>
+  <span class="footer-right">Maintained by <a href="https://github.com/rgrossharv" target="_blank" rel="noopener">Ryland Gross</a></span>
+</div>
+</div>
+</section>
+
+<script>
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const showExamples = params.get("view") === "examples";
+
+  const homeView = document.getElementById("homeView");
+  const examplesView = document.getElementById("examplesView");
+  homeView.hidden = showExamples;
+  examplesView.hidden = !showExamples;
+
+})();
+</script>
+
 </body>
 </html>

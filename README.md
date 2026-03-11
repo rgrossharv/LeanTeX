@@ -1,12 +1,12 @@
 # LeanTeX
 
-LeanTeX lets you embed Lean 4 snippets directly in LaTeX and render both code and Lean diagnostics/output into your PDF.
+LeanTeX lets you embed Lean 4 snippets directly in LaTeX and render both code and Lean's infoview/diagnostics/output into your PDF.
 
 ## Features
 
 - `\begin{lean} ... \end{lean}` blocks in LaTeX
 - Per-snippet output rendering and infoview summaries
-- One-file shared context mode (`[onefile]`)
+- One-file shared context mode between snippets \usepackage[onefile]{leantex}
 - Caching for faster rebuilds
 - CLI modes: `build`, `watch`, and `install-tex`
 
@@ -24,12 +24,12 @@ LeanTeX lets you embed Lean 4 snippets directly in LaTeX and render both code an
 - Lean 4 and Lake
 - TeX distribution with `latexmk`, `listings`, `tcolorbox`, `comment`
 
-## Install 
+## Install (End User)
 
 ### 1) Clone
 
 ```bash
-git clone https://github.com/<your-org-or-user>/LeanTeX.git
+git clone https://github.com/rgrossharv/LeanTeX.git
 cd LeanTeX
 ```
 
@@ -99,6 +99,15 @@ cd examples/minimal
 PYTHONPATH=../.. python3 -m leantex build minimal.tex
 ```
 
+Build the larger `test4.tex` sample from the same folder:
+
+```bash
+cd examples/minimal
+make test4
+```
+
+(`python3 -m leantex ...` from `examples/minimal` without `PYTHONPATH=../..` will fail with `No module named leantex` unless you installed the package globally.)
+
 ## LaTeX Usage
 
 Basic:
@@ -160,3 +169,7 @@ git branch -M main
 git remote add origin https://github.com/<your-org-or-user>/LeanTeX.git
 git push -u origin main
 ```
+
+## License
+
+Public domain dedication via The Unlicense (see `LICENSE`).

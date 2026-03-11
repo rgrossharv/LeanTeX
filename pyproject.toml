@@ -9,7 +9,7 @@ description = "LeanTeX: embed Lean 4 diagnostics and messages in LaTeX PDFs"
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [{ name = "LeanTeX" }]
-license = { text = "MIT" }
+license = { text = "The Unlicense" }
 
 [project.scripts]
 leantex = "leantex.cli:main"

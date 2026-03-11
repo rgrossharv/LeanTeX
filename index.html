@@ -98,6 +98,20 @@ and render both Lean output and diagnostics inside your compiled PDF.
 
 <hr>
 
+<h2 id="requirements">Requirements</h2>
+
+<p>Before installing LeanTeX, make sure your machine has:</p>
+<ul>
+  <li><strong>Python 3.9+</strong> (with <code>pip</code>)</li>
+  <li><strong>Lean 4 + Lake</strong> (for running and checking Lean snippets)</li>
+  <li><strong>A TeX distribution</strong> with <code>latexmk</code>, <code>listings</code>, <code>tcolorbox</code>, and <code>comment</code></li>
+  <li><strong>Git</strong> (to clone the repository)</li>
+</ul>
+
+<p>Optional but recommended for larger examples (such as <code>test4.tex</code>): run <code>lake update</code> and <code>lake exe cache get</code> in <code>examples/minimal</code>.</p>
+
+<hr>
+
 <h2 id="installation">Installation</h2>
 
 <h3>1) Clone</h3>

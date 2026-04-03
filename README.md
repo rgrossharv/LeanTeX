@@ -178,7 +178,7 @@ Public domain dedication via The Unlicense (see `LICENSE`).
 
 If you used LeanTeX in your work and you wish to give credit then you can use this:
 
-**MLA:** Gross, Ryland. *LeanTeX*. 2025. GitHub, https://github.com/rgrossharv/LeanTeX. Accessed 3 Apr. 2026.
+**MLA:** Gross, Ryland. *LeanTeX*. 2025. GitHub, https://github.com/rgrossharv/LeanTeX.
 
 **BibTeX:**
 ```bibtex
@@ -187,6 +187,5 @@ If you used LeanTeX in your work and you wish to give credit then you can use th
   title   = {{LeanTeX}},
   year    = {2025},
   url     = {https://github.com/rgrossharv/LeanTeX},
-  note    = {Accessed: 2026-04-03}
 }
 ```

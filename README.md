@@ -173,3 +173,20 @@ git push -u origin main
 ## License
 
 Public domain dedication via The Unlicense (see `LICENSE`).
+
+## Citation
+
+If you used LeanTeX in your work and you wish to give credit then you can use this:
+
+**MLA:** Gross, Ryland. *LeanTeX*. 2025. GitHub, https://github.com/rgrossharv/LeanTeX. Accessed 3 Apr. 2026.
+
+**BibTeX:**
+```bibtex
+@software{gross2025leantex,
+  author  = {Gross, Ryland},
+  title   = {{LeanTeX}},
+  year    = {2025},
+  url     = {https://github.com/rgrossharv/LeanTeX},
+  note    = {Accessed: 2026-04-03}
+}
+```

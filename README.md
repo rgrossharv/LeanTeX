@@ -176,7 +176,7 @@ Public domain dedication via The Unlicense (see `LICENSE`).
 
 ## Citation
 
-If you used LeanTeX in your work and you wish to give credit then you can use this:
+If you used LeanTeX in your work and you want to give credit to me (you for sure don't have to!) then you can use this:
 
 **MLA:** Gross, Ryland. *LeanTeX*. 2025. GitHub, https://github.com/rgrossharv/LeanTeX.
 

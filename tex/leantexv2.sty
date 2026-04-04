@@ -462,16 +462,9 @@
       \leantex@rendercode{\lltcodesizecmd}{\lltcoderawpath}%
     }%
     %
-    % Show output block (unless show=code or no output)
+    % Show output block (unless show=code)
     \ifdefstrequal{\lltshow}{\leantex@showcode}{}{%
-      \ifcsname leantex@hasoutput@#1\endcsname
-        \edef\llthasoutput{\csname leantex@hasoutput@#1\endcsname}%
-      \else
-        \def\llthasoutput{1}% backward compat: show if flag missing
-      \fi
-      \ifnum\llthasoutput=1\relax
-        \leantex@renderoutput{\lltoutsizecmd}{\lltoutrawpath}{\llthaserror}%
-      \fi
+      \leantex@renderoutput{\lltoutsizecmd}{\lltoutrawpath}{\llthaserror}%
     }%
   \else
     \begin{tcolorbox}[
@@ -497,15 +490,8 @@
   \ifcsname leantex@extractedoutrawpath\endcsname
     \edef\lltoutviewpath{\csname leantex@extractedoutrawpath\endcsname}%
     \edef\llthaserror{\csname leantex@extractedhaserror\endcsname}%
-    \ifcsname leantex@extractedhasoutput\endcsname
-      \edef\llthasoutput{\csname leantex@extractedhasoutput\endcsname}%
-    \else
-      \def\llthasoutput{1}%
-    \fi
     \def\lltoutsizecmd{\leantex@defaultoutsize}%
-    \ifnum\llthasoutput=1\relax
-      \leantex@renderoutput{\lltoutsizecmd}{\lltoutviewpath}{\llthaserror}%
-    \fi
+    \leantex@renderoutput{\lltoutsizecmd}{\lltoutviewpath}{\llthaserror}%
   \else
     \begin{tcolorbox}[colback=leantexWarnBg,colframe=leantexWarnFrame,title=LeanTeX v2]
       Missing extracted infoview data. Run \texttt{leantex build} first.

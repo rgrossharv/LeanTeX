@@ -6,15 +6,115 @@ minted/pygments handles Unicode natively via XeLaTeX/LuaLaTeX.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from .io_utils import write_text_if_changed
 from .models import LeanMessage, Snippet
-from .render import format_messages
 
 
 def _safe_text_for_file(text: str) -> str:
     return text.rstrip("\n") + "\n" if text else ""
+
+
+def _severity_rank(sev: str) -> int:
+    if sev == "error":
+        return 0
+    if sev == "warning":
+        return 1
+    return 2
+
+
+def _clean_text(msg: LeanMessage) -> str:
+    """Strip internal prefixes from a message's text."""
+    text = msg.text
+    # Remove "[infoview] tactic state:\n" prefix
+    text = re.sub(r"^\[infoview\] tactic state:\s*\n?", "", text)
+    # Remove "[infoview message] " prefix
+    text = re.sub(r"^\[infoview message\] ", "", text)
+    return text.strip()
+
+
+def format_messages_v2(
+    messages: list[LeanMessage],
+    infoview_mode: str = "auto",
+    infoview_lines: int = 4,
+) -> str:
+    """Format Lean messages for clean PDF output (no internal metadata)."""
+    if not messages:
+        return ""
+
+    # Deduplicate
+    deduped: list[LeanMessage] = []
+    seen: set[tuple[str, int | None, int | None, str, str]] = set()
+    for msg in messages:
+        key = (msg.severity, msg.line, msg.col, msg.text, msg.source)
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(msg)
+
+    # Categorize
+    lean_msgs = [m for m in deduped if m.source not in {"infoview", "infoview-message"}]
+    infoview_state = [m for m in deduped if m.source == "infoview"]
+    infoview_tab = [m for m in deduped if m.source == "infoview-message"]
+
+    # Normalize whitespace for comparison (multiline vs single-line duplicates)
+    def _norm(text: str) -> str:
+        return re.sub(r"\s+", " ", text).strip().lower()
+
+    # Deduplicate infoview-message entries that duplicate lean_msgs content
+    lean_norm_keys = {(m.severity, _norm(_clean_text(m))) for m in lean_msgs}
+    infoview_tab = [
+        m for m in infoview_tab
+        if (m.severity, _norm(_clean_text(m))) not in lean_norm_keys
+    ]
+
+    # Also deduplicate infoview_tab entries whose cleaned text duplicates
+    # cleaned infoview_state text (e.g. "no goals" vs "Goals accomplished!")
+    state_texts = {_norm(_clean_text(m)) for m in infoview_state}
+
+    # Build clean output lines
+    output_parts: list[str] = []
+
+    # Lean messages (errors first, then warnings, then info)
+    for msg in sorted(lean_msgs, key=lambda m: (_severity_rank(m.severity), m.line or 10**9)):
+        text = _clean_text(msg)
+        if msg.severity == "error":
+            output_parts.append(f"error: {text}")
+        elif msg.severity == "warning":
+            output_parts.append(f"warning: {text}")
+        else:
+            output_parts.append(text)
+
+    # Infoview state (tactic goals)
+    for msg in sorted(infoview_state, key=lambda m: (m.line or 10**9,)):
+        text = _clean_text(msg)
+        if text and text.lower() not in {"no goals"}:
+            # Show tactic state (goal hypotheses and target)
+            output_parts.append(text)
+        elif text.lower() == "no goals":
+            # Only show "no goals" if there are no "Goals accomplished!" messages
+            has_accomplished = any("goals accomplished" in _clean_text(m).lower() for m in infoview_tab)
+            if not has_accomplished:
+                output_parts.append(text)
+
+    # Infoview messages (Goals accomplished!, etc.)
+    for msg in sorted(infoview_tab, key=lambda m: (_severity_rank(m.severity), m.line or 10**9)):
+        text = _clean_text(msg)
+        if _norm(text) in state_texts:
+            continue
+        if msg.severity == "error":
+            output_parts.append(f"error: {text}")
+        elif msg.severity == "warning":
+            output_parts.append(f"warning: {text}")
+        else:
+            output_parts.append(text)
+
+    if not output_parts:
+        return ""
+
+    return "\n".join(output_parts)
 
 
 def write_generated_assets_v2(
@@ -47,7 +147,7 @@ def write_generated_assets_v2(
             _safe_text_for_file(snip.code),
             encoding="utf-8",
         )
-        output_text = format_messages(
+        output_text = format_messages_v2(
             snip_msgs,
             infoview_mode=snip.infoview,
             infoview_lines=snip.infoview_lines,
@@ -97,7 +197,7 @@ def write_generated_assets_v2(
 
     # Document-level extracted infoview
     extracted_out_raw_file = artifacts_dir / "extracted.infoview.raw.txt"
-    extracted_output_text = format_messages(
+    extracted_output_text = format_messages_v2(
         document_messages or [], infoview_mode="full"
     )
     write_text_if_changed(

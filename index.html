@@ -77,6 +77,27 @@ a:hover {
 .example-item {
     margin: 20px 0 28px;
 }
+
+.example-item.featured {
+    border-left: 4px solid #444;
+    padding-left: 16px;
+    background: #f0f0ea;
+    padding: 16px 20px;
+    margin-bottom: 36px;
+}
+
+.example-item.featured h2 {
+    margin-top: 0.4em;
+}
+
+.featured-label {
+    font-size: 0.8em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #555;
+    margin-bottom: 4px;
+}
 </style>
 </head>
 
@@ -158,6 +179,7 @@ Use the dedicated examples page to view source and output:
 </p>
 
 <ul>
+<li><code>project.tex</code> — featured example</li>
 <li><code>minimal.tex</code> — small demo</li>
 <li><code>test4.tex</code> — larger sample using Mathlib imports</li>
 </ul>
@@ -218,6 +240,18 @@ This page shows example source and rendered PDFs from <code>examples/minimal</co
 <div class="nav">
 <a href="./index.html">Home</a> |
 <a href="https://github.com/rgrossharv/LeanTeX/tree/main/examples/minimal">examples/minimal on GitHub</a>
+</div>
+
+<hr>
+
+<div class="example-item featured" id="project">
+  <div class="featured-label">&#9733; Featured Example</div>
+  <h2>project.tex</h2>
+  <ul>
+    <li><a href="https://raw.githubusercontent.com/rgrossharv/LeanTeX/main/examples/minimal/project.tex" target="_blank" rel="noopener">View source text (raw project.tex)</a></li>
+    <li><a href="https://github.com/rgrossharv/LeanTeX/blob/main/examples/minimal/project.tex" target="_blank" rel="noopener">View source on GitHub</a></li>
+    <li><a href="./examples/minimal/project.pdf">Open compiled PDF (project.pdf)</a></li>
+  </ul>
 </div>
 
 <hr>

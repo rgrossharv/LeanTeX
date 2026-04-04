@@ -1,0 +1,512 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{leantexv2}[2026/04/04 LeanTeX v2 -- minted-based Lean 4 integration]
+
+% ────────────────────────────────────────────────────────────
+%  Options
+% ────────────────────────────────────────────────────────────
+\newif\ifleantexonefile
+\leantexonefilefalse
+\DeclareOption{onefile}{\leantexonefiletrue}
+\DeclareOption{isolated}{\leantexonefilefalse}
+\ProcessOptions\relax
+
+% ────────────────────────────────────────────────────────────
+%  Required packages (user needs NOTHING else)
+% ────────────────────────────────────────────────────────────
+\RequirePackage{etoolbox}
+\RequirePackage{comment}
+\RequirePackage{iftex}
+\RequirePackage{xcolor}
+\RequirePackage{amssymb}
+\RequirePackage{tcolorbox}
+\tcbuselibrary{skins}
+\RequirePackage{minted}
+\RequirePackage{newunicodechar}
+
+% Require a Unicode engine
+\ifPDFTeX
+  \PackageError{leantexv2}{%
+    leantexv2 requires XeLaTeX or LuaLaTeX for Unicode support.%
+    \MessageBreak Use: xelatex --shell-escape yourfile.tex%
+  }{Switch to xelatex or lualatex and recompile.}
+\fi
+
+% ────────────────────────────────────────────────────────────
+%  Font setup (fontspec -- XeTeX/LuaTeX only)
+% ────────────────────────────────────────────────────────────
+\RequirePackage{fontspec}
+\IfFontExistsTF{JuliaMono}{%
+  \newfontfamily\leantexmonofont{JuliaMono}[Scale=MatchLowercase]%
+  \setmonofont{JuliaMono}[Scale=MatchLowercase]%
+}{%
+  \IfFontExistsTF{DejaVu Sans Mono}{%
+    \newfontfamily\leantexmonofont{DejaVu Sans Mono}[Scale=MatchLowercase]%
+    \setmonofont{DejaVu Sans Mono}[Scale=MatchLowercase]%
+  }{%
+    \IfFontExistsTF{Noto Sans Mono}{%
+      \newfontfamily\leantexmonofont{Noto Sans Mono}[Scale=MatchLowercase]%
+      \setmonofont{Noto Sans Mono}[Scale=MatchLowercase]%
+    }{%
+      \IfFontExistsTF{Menlo}{%
+        \newfontfamily\leantexmonofont{Menlo}[Scale=MatchLowercase]%
+        \setmonofont{Menlo}[Scale=MatchLowercase]%
+      }{%
+        \newfontfamily\leantexmonofont{Latin Modern Mono}[Scale=MatchLowercase]%
+      }%
+    }%
+  }%
+}
+
+% ────────────────────────────────────────────────────────────
+%  Unicode fallback: use STIX Two Math / Apple Symbols for
+%  characters missing from the primary mono font
+% ────────────────────────────────────────────────────────────
+\newcommand{\leantex@fallbackchar}[1]{%
+  {\leantex@unicodefallback #1}%
+}
+% Pick the best available fallback font for math/logic symbols
+\IfFontExistsTF{STIX Two Math}{%
+  \newfontfamily\leantex@unicodefallback{STIX Two Math}[Scale=MatchLowercase]%
+}{%
+  \IfFontExistsTF{Apple Symbols}{%
+    \newfontfamily\leantex@unicodefallback{Apple Symbols}[Scale=MatchLowercase]%
+  }{%
+    \IfFontExistsTF{Symbola}{%
+      \newfontfamily\leantex@unicodefallback{Symbola}[Scale=MatchLowercase]%
+    }{%
+      % Last resort: just use the mono font and accept missing glyphs
+      \let\leantex@unicodefallback\leantexmonofont
+    }%
+  }%
+}
+% Logic / proof symbols
+\newunicodechar{⊢}{\leantex@fallbackchar{⊢}}
+\newunicodechar{⊣}{\leantex@fallbackchar{⊣}}
+\newunicodechar{⊤}{\leantex@fallbackchar{⊤}}
+\newunicodechar{⊥}{\leantex@fallbackchar{⊥}}
+\newunicodechar{⊧}{\leantex@fallbackchar{⊧}}
+\newunicodechar{⊨}{\leantex@fallbackchar{⊨}}
+\newunicodechar{⊩}{\leantex@fallbackchar{⊩}}
+% Arrows
+\newunicodechar{⟹}{\leantex@fallbackchar{⟹}}
+\newunicodechar{⟸}{\leantex@fallbackchar{⟸}}
+\newunicodechar{⟷}{\leantex@fallbackchar{⟷}}
+\newunicodechar{⟶}{\leantex@fallbackchar{⟶}}
+\newunicodechar{⟵}{\leantex@fallbackchar{⟵}}
+\newunicodechar{⇒}{\leantex@fallbackchar{⇒}}
+\newunicodechar{⇐}{\leantex@fallbackchar{⇐}}
+\newunicodechar{⇔}{\leantex@fallbackchar{⇔}}
+\newunicodechar{↦}{\leantex@fallbackchar{↦}}
+\newunicodechar{↪}{\leantex@fallbackchar{↪}}
+\newunicodechar{↠}{\leantex@fallbackchar{↠}}
+% Slashes / quotient
+\newunicodechar{⧸}{\leantex@fallbackchar{⧸}}
+\newunicodechar{⫽}{\leantex@fallbackchar{⫽}}
+% Set theory / relations
+\newunicodechar{∈}{\leantex@fallbackchar{∈}}
+\newunicodechar{∉}{\leantex@fallbackchar{∉}}
+\newunicodechar{∋}{\leantex@fallbackchar{∋}}
+\newunicodechar{⊆}{\leantex@fallbackchar{⊆}}
+\newunicodechar{⊂}{\leantex@fallbackchar{⊂}}
+\newunicodechar{⊇}{\leantex@fallbackchar{⊇}}
+\newunicodechar{⊃}{\leantex@fallbackchar{⊃}}
+\newunicodechar{⊊}{\leantex@fallbackchar{⊊}}
+\newunicodechar{⊋}{\leantex@fallbackchar{⊋}}
+\newunicodechar{∅}{\leantex@fallbackchar{∅}}
+\newunicodechar{∪}{\leantex@fallbackchar{∪}}
+\newunicodechar{∩}{\leantex@fallbackchar{∩}}
+% Quantifiers / logic
+\newunicodechar{∀}{\leantex@fallbackchar{∀}}
+\newunicodechar{∃}{\leantex@fallbackchar{∃}}
+\newunicodechar{∧}{\leantex@fallbackchar{∧}}
+\newunicodechar{∨}{\leantex@fallbackchar{∨}}
+\newunicodechar{¬}{\leantex@fallbackchar{¬}}
+% Comparison / equivalence
+\newunicodechar{≤}{\leantex@fallbackchar{≤}}
+\newunicodechar{≥}{\leantex@fallbackchar{≥}}
+\newunicodechar{≠}{\leantex@fallbackchar{≠}}
+\newunicodechar{≡}{\leantex@fallbackchar{≡}}
+\newunicodechar{≈}{\leantex@fallbackchar{≈}}
+\newunicodechar{≃}{\leantex@fallbackchar{≃}}
+\newunicodechar{≅}{\leantex@fallbackchar{≅}}
+\newunicodechar{≔}{\leantex@fallbackchar{≔}}
+\newunicodechar{≺}{\leantex@fallbackchar{≺}}
+\newunicodechar{≻}{\leantex@fallbackchar{≻}}
+% Number sets
+\newunicodechar{ℕ}{\leantex@fallbackchar{ℕ}}
+\newunicodechar{ℤ}{\leantex@fallbackchar{ℤ}}
+\newunicodechar{ℚ}{\leantex@fallbackchar{ℚ}}
+\newunicodechar{ℝ}{\leantex@fallbackchar{ℝ}}
+\newunicodechar{ℂ}{\leantex@fallbackchar{ℂ}}
+% Brackets / angles
+\newunicodechar{⟨}{\leantex@fallbackchar{⟨}}
+\newunicodechar{⟩}{\leantex@fallbackchar{⟩}}
+\newunicodechar{⟦}{\leantex@fallbackchar{⟦}}
+\newunicodechar{⟧}{\leantex@fallbackchar{⟧}}
+\newunicodechar{‹}{\leantex@fallbackchar{‹}}
+\newunicodechar{›}{\leantex@fallbackchar{›}}
+% Operators / misc math
+\newunicodechar{▸}{\leantex@fallbackchar{▸}}
+\newunicodechar{◂}{\leantex@fallbackchar{◂}}
+\newunicodechar{∘}{\leantex@fallbackchar{∘}}
+\newunicodechar{×}{\leantex@fallbackchar{×}}
+\newunicodechar{÷}{\leantex@fallbackchar{÷}}
+\newunicodechar{±}{\leantex@fallbackchar{±}}
+\newunicodechar{∓}{\leantex@fallbackchar{∓}}
+\newunicodechar{∞}{\leantex@fallbackchar{∞}}
+\newunicodechar{∂}{\leantex@fallbackchar{∂}}
+\newunicodechar{∑}{\leantex@fallbackchar{∑}}
+\newunicodechar{∏}{\leantex@fallbackchar{∏}}
+\newunicodechar{∫}{\leantex@fallbackchar{∫}}
+\newunicodechar{√}{\leantex@fallbackchar{√}}
+\newunicodechar{·}{\leantex@fallbackchar{·}}
+\newunicodechar{†}{\leantex@fallbackchar{†}}
+\newunicodechar{‡}{\leantex@fallbackchar{‡}}
+\newunicodechar{⊕}{\leantex@fallbackchar{⊕}}
+\newunicodechar{⊗}{\leantex@fallbackchar{⊗}}
+\newunicodechar{⊛}{\leantex@fallbackchar{⊛}}
+\newunicodechar{⊙}{\leantex@fallbackchar{⊙}}
+\newunicodechar{⊞}{\leantex@fallbackchar{⊞}}
+\newunicodechar{⊠}{\leantex@fallbackchar{⊠}}
+% Greek letters (common in Lean)
+\newunicodechar{α}{\leantex@fallbackchar{α}}
+\newunicodechar{β}{\leantex@fallbackchar{β}}
+\newunicodechar{γ}{\leantex@fallbackchar{γ}}
+\newunicodechar{δ}{\leantex@fallbackchar{δ}}
+\newunicodechar{ε}{\leantex@fallbackchar{ε}}
+\newunicodechar{ζ}{\leantex@fallbackchar{ζ}}
+\newunicodechar{η}{\leantex@fallbackchar{η}}
+\newunicodechar{θ}{\leantex@fallbackchar{θ}}
+\newunicodechar{ι}{\leantex@fallbackchar{ι}}
+\newunicodechar{κ}{\leantex@fallbackchar{κ}}
+\newunicodechar{λ}{\leantex@fallbackchar{λ}}
+\newunicodechar{μ}{\leantex@fallbackchar{μ}}
+\newunicodechar{ν}{\leantex@fallbackchar{ν}}
+\newunicodechar{ξ}{\leantex@fallbackchar{ξ}}
+\newunicodechar{π}{\leantex@fallbackchar{π}}
+\newunicodechar{ρ}{\leantex@fallbackchar{ρ}}
+\newunicodechar{σ}{\leantex@fallbackchar{σ}}
+\newunicodechar{τ}{\leantex@fallbackchar{τ}}
+\newunicodechar{υ}{\leantex@fallbackchar{υ}}
+\newunicodechar{φ}{\leantex@fallbackchar{φ}}
+\newunicodechar{χ}{\leantex@fallbackchar{χ}}
+\newunicodechar{ψ}{\leantex@fallbackchar{ψ}}
+\newunicodechar{ω}{\leantex@fallbackchar{ω}}
+\newunicodechar{Γ}{\leantex@fallbackchar{Γ}}
+\newunicodechar{Δ}{\leantex@fallbackchar{Δ}}
+\newunicodechar{Θ}{\leantex@fallbackchar{Θ}}
+\newunicodechar{Λ}{\leantex@fallbackchar{Λ}}
+\newunicodechar{Ξ}{\leantex@fallbackchar{Ξ}}
+\newunicodechar{Π}{\leantex@fallbackchar{Π}}
+\newunicodechar{Σ}{\leantex@fallbackchar{Σ}}
+\newunicodechar{Φ}{\leantex@fallbackchar{Φ}}
+\newunicodechar{Ψ}{\leantex@fallbackchar{Ψ}}
+\newunicodechar{Ω}{\leantex@fallbackchar{Ω}}
+% Subscript digits (Lean uses these)
+\newunicodechar{₀}{\leantex@fallbackchar{₀}}
+\newunicodechar{₁}{\leantex@fallbackchar{₁}}
+\newunicodechar{₂}{\leantex@fallbackchar{₂}}
+\newunicodechar{₃}{\leantex@fallbackchar{₃}}
+\newunicodechar{₄}{\leantex@fallbackchar{₄}}
+\newunicodechar{₅}{\leantex@fallbackchar{₅}}
+\newunicodechar{₆}{\leantex@fallbackchar{₆}}
+\newunicodechar{₇}{\leantex@fallbackchar{₇}}
+\newunicodechar{₈}{\leantex@fallbackchar{₈}}
+\newunicodechar{₉}{\leantex@fallbackchar{₉}}
+% Superscript digits
+\newunicodechar{⁰}{\leantex@fallbackchar{⁰}}
+\newunicodechar{¹}{\leantex@fallbackchar{¹}}
+\newunicodechar{²}{\leantex@fallbackchar{²}}
+\newunicodechar{³}{\leantex@fallbackchar{³}}
+\newunicodechar{⁴}{\leantex@fallbackchar{⁴}}
+\newunicodechar{⁵}{\leantex@fallbackchar{⁵}}
+\newunicodechar{⁶}{\leantex@fallbackchar{⁶}}
+\newunicodechar{⁷}{\leantex@fallbackchar{⁷}}
+\newunicodechar{⁸}{\leantex@fallbackchar{⁸}}
+\newunicodechar{⁹}{\leantex@fallbackchar{⁹}}
+% Miscellaneous Lean symbols
+\newunicodechar{★}{\leantex@fallbackchar{★}}
+\newunicodechar{♯}{\leantex@fallbackchar{♯}}
+\newunicodechar{♭}{\leantex@fallbackchar{♭}}
+\newunicodechar{♮}{\leantex@fallbackchar{♮}}
+\newunicodechar{⬝}{\leantex@fallbackchar{⬝}}
+\newunicodechar{▹}{\leantex@fallbackchar{▹}}
+\newunicodechar{◃}{\leantex@fallbackchar{◃}}
+
+% ────────────────────────────────────────────────────────────
+%  Minted configuration
+% ────────────────────────────────────────────────────────────
+\usemintedstyle{tango}
+\setminted{
+  fontsize=\small,
+  breaklines=true,
+  breakanywhere=true,
+  tabsize=2,
+  encoding=utf-8
+}
+
+% ────────────────────────────────────────────────────────────
+%  Colors
+% ────────────────────────────────────────────────────────────
+% Code blocks
+\definecolor{leantexCodeBg}{HTML}{FAFBFC}
+\definecolor{leantexCodeFrame}{HTML}{D0D7DE}
+\definecolor{leantexCodeTitleBg}{HTML}{3B4252}
+\definecolor{leantexCodeTitleFg}{HTML}{ECEFF4}
+% Info output
+\definecolor{leantexInfoBg}{HTML}{EFF6FF}
+\definecolor{leantexInfoFrame}{HTML}{93C5FD}
+\definecolor{leantexInfoTitleBg}{HTML}{2563EB}
+\definecolor{leantexInfoTitleFg}{HTML}{FFFFFF}
+% Error output
+\definecolor{leantexErrorBg}{HTML}{FEF2F2}
+\definecolor{leantexErrorFrame}{HTML}{FCA5A5}
+\definecolor{leantexErrorTitleBg}{HTML}{DC2626}
+\definecolor{leantexErrorTitleFg}{HTML}{FFFFFF}
+% Warning
+\definecolor{leantexWarnBg}{HTML}{FFFBEB}
+\definecolor{leantexWarnFrame}{HTML}{FCD34D}
+\definecolor{leantexWarnTitleBg}{HTML}{D97706}
+\definecolor{leantexWarnTitleFg}{HTML}{FFFFFF}
+
+% ────────────────────────────────────────────────────────────
+%  State / counters
+% ────────────────────────────────────────────────────────────
+\newcounter{leantexblock}
+\newcommand{\leantexenableonefile}{\global\leantexonefiletrue}
+\newcommand{\leantexdisableonefile}{\global\leantexonefilefalse}
+
+% ────────────────────────────────────────────────────────────
+%  User-facing configuration commands
+% ────────────────────────────────────────────────────────────
+\newcommand{\leantex@defaultcodesize}{\small}
+\newcommand{\leantexsetdefaultcodesize}[1]{\renewcommand{\leantex@defaultcodesize}{#1}}
+\newcommand{\leantex@defaultoutsize}{\small}
+\newcommand{\leantexsetdefaultoutputsize}[1]{\renewcommand{\leantex@defaultoutsize}{#1}}
+
+% Extra minted options for code / output (comma-separated key=value)
+\newcommand{\leantex@mintedcodeopts}{}
+\newcommand{\leantex@mintedoutopts}{}
+\newcommand{\leantexsetcodestyle}[1]{\renewcommand{\leantex@mintedcodeopts}{,#1}}
+\newcommand{\leantexsetoutputstyle}[1]{\renewcommand{\leantex@mintedoutopts}{,#1}}
+
+% Minted style override
+\newcommand{\leantexsetmintedstyle}[1]{\usemintedstyle{#1}}
+
+% ────────────────────────────────────────────────────────────
+%  Auto-build machinery (identical to v1)
+% ────────────────────────────────────────────────────────────
+\newif\ifleantexautobuild
+\leantexautobuildtrue
+\newcommand{\leantex@buildcommand}{python3 -m leantex build "\jobname.tex" --no-latexmk}
+\newcommand{\leantexsetbuildcommand}[1]{\renewcommand{\leantex@buildcommand}{#1}}
+\newcommand{\leantexenableautobuild}{\leantexautobuildtrue}
+\newcommand{\leantexdisableautobuild}{\leantexautobuildfalse}
+
+\newif\ifleantex@loadedgenerated
+\leantex@loadedgeneratedfalse
+\newcommand{\leantex@autobuildgenerated}{%
+  \begingroup
+    \newif\ifleantex@shellescape
+    \leantex@shellescapefalse
+    \ifdefined\pdfshellescape
+      \ifnum\pdfshellescape=1\relax
+        \leantex@shellescapetrue
+      \fi
+    \else
+      \ifdefined\shellescape
+        \ifnum\shellescape=1\relax
+          \leantex@shellescapetrue
+        \fi
+      \fi
+    \fi
+    \ifleantex@shellescape
+      \immediate\write18{\leantex@buildcommand}%
+    \else
+      \PackageWarningNoLine{leantexv2}{%
+        leantexv2.generated.tex missing and unrestricted shell-escape is not enabled.\MessageBreak
+        Run `leantex build \jobname.tex` (or use latexmk hook) first%
+      }%
+    \fi
+  \endgroup
+}
+\newcommand{\leantexloadgenerated}{%
+  \ifleantex@loadedgenerated\else
+    \ifcsname leantex@generatedloaded\endcsname
+      \global\leantex@loadedgeneratedtrue
+    \fi
+  \fi
+  \ifleantex@loadedgenerated\else
+    \IfFileExists{leantexv2.generated.tex}{}{%
+      \ifleantexautobuild
+        \leantex@autobuildgenerated
+      \fi
+    }%
+    \InputIfFileExists{leantexv2.generated.tex}{%
+      \global\leantex@loadedgeneratedtrue
+    }{%
+      \PackageWarningNoLine{leantexv2}{%
+        leantexv2.generated.tex not found.\MessageBreak
+        Lean blocks will show "Missing generated data" placeholders%
+      }%
+    }%
+  \fi
+}
+\AtBeginDocument{\leantexloadgenerated}
+
+% ────────────────────────────────────────────────────────────
+%  Internal accessors
+% ────────────────────────────────────────────────────────────
+\newcommand{\leantex@get}[2]{%
+  \ifcsname leantex@#1@#2\endcsname
+    \csname leantex@#1@#2\endcsname
+  \else
+    \relax
+  \fi
+}
+
+% ────────────────────────────────────────────────────────────
+%  Code block rendering (minted via \inputminted)
+% ────────────────────────────────────────────────────────────
+\newcommand{\leantex@rendercode}[2]{%
+  % #1 = font size command, #2 = file path
+  \begin{tcolorbox}[
+    colback=leantexCodeBg,
+    colframe=leantexCodeFrame,
+    boxrule=0.4pt,
+    arc=1.5pt,
+    left=0pt,
+    right=0pt,
+    top=0pt,
+    bottom=0pt,
+    boxsep=0pt,
+    toptitle=2pt,
+    bottomtitle=2pt,
+    title={\sffamily\small\bfseries Lean},
+    colbacktitle=leantexCodeTitleBg,
+    coltitle=white
+  ]
+    \inputminted[
+      fontsize=#1,
+      breaklines=true,
+      breakanywhere=true,
+      tabsize=2\leantex@mintedcodeopts
+    ]{lean4}{#2}
+  \end{tcolorbox}
+}
+
+% ────────────────────────────────────────────────────────────
+%  Infoview output rendering (minted text mode in tcolorbox)
+% ────────────────────────────────────────────────────────────
+\newcommand{\leantex@renderoutput}[3]{%
+  % #1 = font size command, #2 = file path, #3 = has error (1/0)
+  \ifnum#3=1\relax
+    \def\leantex@outbg{leantexErrorBg}%
+    \def\leantex@outframe{leantexErrorFrame}%
+    \def\leantex@outtitlebg{leantexErrorTitleBg}%
+    \def\leantex@outtitle{Infoview Output}%
+  \else
+    \def\leantex@outbg{leantexInfoBg}%
+    \def\leantex@outframe{leantexInfoFrame}%
+    \def\leantex@outtitlebg{leantexCodeTitleBg}%
+    \def\leantex@outtitle{Infoview Output}%
+  \fi
+  \begin{tcolorbox}[
+    colback=\leantex@outbg,
+    colframe=\leantex@outframe,
+    boxrule=0.4pt,
+    arc=1.5pt,
+    left=0pt,
+    right=0pt,
+    top=0pt,
+    bottom=0pt,
+    boxsep=0pt,
+    toptitle=2pt,
+    bottomtitle=2pt,
+    title={\sffamily\small\bfseries \leantex@outtitle},
+    colbacktitle=\leantex@outtitlebg,
+    coltitle=white
+  ]
+    \inputminted[
+      fontsize=#1,
+      breaklines=true,
+      breakanywhere=true,
+      tabsize=2\leantex@mintedoutopts
+    ]{text}{#2}
+  \end{tcolorbox}
+}
+
+% ────────────────────────────────────────────────────────────
+%  Main render dispatch
+% ────────────────────────────────────────────────────────────
+\newcommand{\leantex@showoutput}{output}
+\newcommand{\leantex@showcode}{code}
+\newcommand{\leantex@render}[1]{%
+  \ifcsname leantex@codepath@#1\endcsname
+    \edef\lltshow{\leantex@get{show}{#1}}%
+    \edef\lltcoderawpath{\leantex@get{coderawpath}{#1}}%
+    \edef\lltoutrawpath{\leantex@get{outrawpath}{#1}}%
+    \edef\llthaserror{\leantex@get{haserror}{#1}}%
+    %
+    \def\lltcodesizecmd{\leantex@defaultcodesize}%
+    \ifcsname leantex@codesize@#1\endcsname
+      \expandafter\let\expandafter\lltcodesizecmd\csname leantex@codesize@#1\endcsname
+    \fi
+    \def\lltoutsizecmd{\leantex@defaultoutsize}%
+    \ifcsname leantex@outsize@#1\endcsname
+      \expandafter\let\expandafter\lltoutsizecmd\csname leantex@outsize@#1\endcsname
+    \fi
+    %
+    % Show code block (unless show=output)
+    \ifdefstrequal{\lltshow}{\leantex@showoutput}{}{%
+      \leantex@rendercode{\lltcodesizecmd}{\lltcoderawpath}%
+    }%
+    %
+    % Show output block (unless show=code)
+    \ifdefstrequal{\lltshow}{\leantex@showcode}{}{%
+      \leantex@renderoutput{\lltoutsizecmd}{\lltoutrawpath}{\llthaserror}%
+    }%
+  \else
+    \begin{tcolorbox}[
+      colback=leantexWarnBg,
+      colframe=leantexWarnFrame,
+      boxrule=0.4pt,
+      arc=1.5pt,
+      toptitle=2pt,
+      bottomtitle=2pt,
+      title={\sffamily\small\bfseries LeanTeX v2},
+      colbacktitle=leantexWarnTitleBg,
+      coltitle=white
+    ]
+      Missing generated data for block #1. Run \texttt{leantex build} first.
+    \end{tcolorbox}
+  \fi
+}
+
+% ────────────────────────────────────────────────────────────
+%  Total infoview
+% ────────────────────────────────────────────────────────────
+\newcommand{\totalinfoview}[1][Extracted Lean Infoview]{%
+  \ifcsname leantex@extractedoutrawpath\endcsname
+    \edef\lltoutviewpath{\csname leantex@extractedoutrawpath\endcsname}%
+    \edef\llthaserror{\csname leantex@extractedhaserror\endcsname}%
+    \def\lltoutsizecmd{\leantex@defaultoutsize}%
+    \leantex@renderoutput{\lltoutsizecmd}{\lltoutviewpath}{\llthaserror}%
+  \else
+    \begin{tcolorbox}[colback=leantexWarnBg,colframe=leantexWarnFrame,title=LeanTeX v2]
+      Missing extracted infoview data. Run \texttt{leantex build} first.
+    \end{tcolorbox}
+  \fi
+}
+\let\leantexshowextractedinfoview\totalinfoview
+
+% ────────────────────────────────────────────────────────────
+%  The lean environment
+% ────────────────────────────────────────────────────────────
+\newenvironment{lean}[1][]{%
+  \stepcounter{leantexblock}%
+  \leantex@render{\arabic{leantexblock}}%
+  \comment
+}{%
+  \endcomment
+}

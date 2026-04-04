@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
+
+# LeanTeX generated outputs
+examples/minimal/.lake/packages/
+examples/minimal/.lake/config/*/lakefile.olean.lock
+examples/minimal/LeanTeX/
+examples/minimal/leantexv2.generated.tex
+examples/minimal/*.aux
+examples/minimal/*.bbl
+examples/minimal/*.bcf
+examples/minimal/*.blg
+examples/minimal/*.fdb_latexmk
+examples/minimal/*.fls
+examples/minimal/*.log
+examples/minimal/*.out
+examples/minimal/*.pdf
+!examples/minimal/minimal.pdf
+examples/minimal/*.run.xml
+examples/minimal/*.synctex.gz
+examples/minimal/*.toc
+examples/minimal/*.xdv
+examples/minimal/missfont.log
+examples/minimal/_minted-*/
+examples/minimal/%OUTDIR%/
+
+# projectex build artifacts (keep only the PDF and source)
+examples/minimal/projectex/LeanTeX/
+examples/minimal/projectex/leantexv2.generated.tex
+examples/minimal/projectex/*.aux
+examples/minimal/projectex/*.fdb_latexmk
+examples/minimal/projectex/*.fls
+examples/minimal/projectex/*.log
+examples/minimal/projectex/*.synctex.gz
+examples/minimal/projectex/*.xdv
+examples/minimal/projectex/missfont.log
+examples/minimal/projectex/_minted-*/
+
+# Backups
+*~

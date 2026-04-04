@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import functools
+import os
 import re
 import subprocess
 import unicodedata
@@ -137,9 +138,20 @@ def _collect_non_ascii_codepoints(text: str) -> set[str]:
 
 
 def _kpsewhich(name: str) -> str | None:
+    import shutil
+
+    kpse = shutil.which("kpsewhich")
+    if kpse is None:
+        # Common TeX binary locations not always on PATH
+        for candidate in ("/Library/TeX/texbin/kpsewhich", "/usr/local/texlive/2024/bin/universal-darwin/kpsewhich"):
+            if os.path.isfile(candidate):
+                kpse = candidate
+                break
+    if kpse is None:
+        return None
     try:
         proc = subprocess.run(
-            ["kpsewhich", name],
+            [kpse, name],
             text=True,
             encoding="utf-8",
             errors="replace",

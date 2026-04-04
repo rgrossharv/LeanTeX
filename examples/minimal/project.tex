@@ -1,0 +1,244 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{fancyvrb}
+\usepackage{geometry}[margin=1]
+\usepackage[onefile]{leantex} % Required for inserting images
+
+\title{An Exercise from Atiyah and MacDonald's \\ Commutative Algebra Formalized in Lean4}
+\author{Ryland Gross}
+\date{April 2026}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+I really enjoyed studying commutative algebra last semester, often because it works very mechanically. How do you know that this is a field? Well look here I quotiented by a maximal ideal and I got this resulting ring. So, I thought this problem would be very fun to implement in Lean. Moreover, when we had our guest lecture from Bryan Wang I gave him a similar exercise which he said would be quite hard, so I thought this exercise would be great to choose this one. 
+
+\begin{enumerate}
+
+\item In the polynomial ring $\mathbb{Z}[t]$, the ideal 
+$
+\mathfrak{m} = (2,t)$
+is maximal and the ideal 
+$
+\mathfrak{q} = (4,t)
+$
+is $\mathfrak{m}$-primary, but is not a power of $\mathfrak{m}$.
+
+\end{enumerate}
+
+The goal here is to familiarize myself with some of the work for ring-theory and even some things around primary decomposition which is the chapter this problem comes from. 
+
+\section{Sketch of Proof and Reflection}
+
+The sketch of this proof is that you prove that the ideal $\mathfrak{m}$ is maximal by showing that the quotient $$\mathbb{Z}[t]/(2,t) \approx \mathbb{Z}/(2)$$ And since this is clearly a field we know that that is maximal. This easy part of the proof ends up being the easiest part of the \emph{Lean} we will write here as well. Now, examining $\mathfrak{q}$ we have a larger challenge, we need to show that $$x \in \text{Rad}(4,t) \implies x \in (2,t) \qquad x \in (2,t) \implies x \in \text{Rad}(4,t)$$ It turned out that the way I had shown this in my original proof was hard to implement in lean. The latter version is easy to show but the former $x \in \text{Rad}(4,t) \implies x \in (2,t)$ requires showing $x^n \in (4,t) \implies x^2 \in (2,t)$ from which we can use the fact that $(2,t)$ is maximal and hence prime to show $x \in (2,t)$. Originally I had shown this using some arguments about polynomials, but this was much more mechanistic and I think, a far better proof. 
+
+\medskip
+
+Once we have done this we have satisfied showing that it is primary since its radical is maximal. Thus, it is $\mathfrak{m}$-primary. The last and hardest piece of proof is showing that $\mathfrak{q}$ is not a power of $\mathfrak{m}$. I originally proved this using a polynomial argument which was extraordinarily difficult to implement. Instead, I have sorried out portions and relied on some properties of subsets and chains of ideals to complete parts of the proof. 
+
+\section{Better Proof}
+
+Here you can see a much more formal version of the proof, which I rewrote after completing the Lean4 version. 
+
+\medskip
+\noindent
+\textbf{Proof:} We start by rewriting using standard rules for quotients of $R$ algebras, $$\mathbb{Z}[t]/(2,t) \approx \mathbb{Z}/(2)$$ So we know that these are isomorphic, similarly we also know that $\mathbb{Z}/(2)$ is a field since it is mod the prime ideal $(2)$ which we obviously know. So this finishes the first part.
+
+\medskip
+\noindent
+Now we show that $\text{Rad}\left[(4,t)\right] = (2,t)$. So first assume that $x \in (2,t)$, we then note that this means $x = 2a + tb$ for some $a,b \in \mathbb{Z}[t]$. Now square this and we get, $$4(abt+a^2)+t(b^2t) = x$$ Thus, we clearly see that this is in $(4,t)$ and we thus know that $x \in \text{Rad}[(4,t)]$.
+
+\medskip
+\noindent
+We take a very direct approach for the next one, we assume that $x \in \text{Rad}\left[(4,t)\right]$ which means that $x^n \in (4,t)$ for some $n$, now we know that $(4,t) \subseteq (2,t)$ because both of its generators are in $(2,t)$ we know $x^n \in (2,t)$ but since $(2,t)$ is maximal and thus prime, we know that $x \in (2,t)$ since it is an elementary fact of prime ideals. Thus we are done with this part.
+
+\medskip
+\noindent
+Now for the last part we want to show that $(4,t)$ is not some power of $(2,t)$. Thus, we know that $(2,t)^0 = (1) \not = (4,t)$ trivially. We also know that $(2,t) \not = (4,t)$ just by looking at the generators. And finally we know that $(2,t)^2 \not = (4,t)$ since $t \not \in (2,t)^2 = (4,2t,t^2)$. And since we know that $I^{n+1} \subseteq I^n$ we know that $t \not \in I^n$ for all $n \geq 2$ which means that none of them can be equal to $(4,t)$. Thus, we have finished the exercise and the proof. \textbf{Q.E.D.}
+
+
+\section{Formalization Details}
+
+Below, I have listed some of the parts of the formalization I think are important for people to see. I wrote these proofs inside of the online lean version and used an \verb|import Mathlib| statement and later filled in the necessary libraries. 
+
+\medskip
+\noindent
+Below you can see these imports.
+
+\begin{lean}[show=code]
+import Mathlib.RingTheory.Ideal.Maximal
+import Mathlib.RingTheory.Ideal.Defs
+import Mathlib.RingTheory.Polynomial.Quotient
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.Data.ZMod.QuotientRing
+import Mathlib.Algebra.Field.IsField
+import Mathlib.Data.ZMod.Defs
+import Mathlib.Algebra.Field.IsField
+import Mathlib.Algebra.Field.Basic
+import Mathlib.Tactic
+\end{lean}
+
+\medskip
+\noindent
+I also resorted to some definitions for shorthand which you can similarly see below.
+
+\begin{lean}[show=code]
+open Polynomial
+
+noncomputable def I : Ideal ℤ[X] := Ideal.span {2,X}
+noncomputable def J : Ideal ℤ[X] := Ideal.span {4,X}
+\end{lean}
+
+\medskip
+\noindent
+Additionally I made great use of the tool \emph{LeanExplore} and the documentation, which was the majority of the work on the project, to find relevant parts and theorems of parts of the proof I thought were obvious. 
+
+\medskip
+\noindent
+The rest of the \emph{Lean} code is available partially in future sections and in the appendices. 
+
+
+\section{Relfection on Formalization}
+
+Working on this was extraordinarily fun at first and frustrating as I came to my conclusion. I began with a proof that was far less precise. I started by using homomorphisms to show that the first ideal was maximal, which is far less efficient than the natural method of removing our adjoined $t$ and modding the $2$ out. Working in Lean, helped me work my way into that more natural method.
+
+\medskip
+
+It was also extremely helpful to find definitions using the mathlib documentation such as \verb|Polynomial.quotientSpanCXSubCAlgEquiv| which formalizes our intuition as a definition ready for use. Similarly using some packages about fields \verb|Semifield.toIsField| internalized some very intuitional work that originally made me a little worried about tackling the problem. 
+
+\medskip
+
+Indeed, the only part of the work for this bit of the proof was plumbing away at getting all of my isomorphisms to line up and be transitive. So the first bit of the proof was quite easy, and you can see the (in my opinion very tight) lean code below. 
+
+\begin{lean}
+theorem Iismaximal : I.IsMaximal := by 
+  apply Ideal.Quotient.maximal_of_isField I
+  have ZxquotIZmod2 : (ℤ[X] ⧸ I) ≃* (ℤ ⧸ (Ideal.span {2} : Ideal ℤ)) := by 
+    have := Polynomial.quotientSpanCXSubCAlgEquiv (R := ℤ) 2 0
+    have idealrfl : Ideal.span {C 2, X - C 0} = I := by 
+      simp only [eq_intCast, Int.cast_ofNat, Int.cast_zero, sub_zero]
+      rfl
+    rw [idealrfl] at this
+    have := this.toMulEquiv 
+    exact this
+  have zquotideal2eqzmod2 : ℤ ⧸ (Ideal.span {2} : Ideal ℤ) ≃* ZMod 2 := by 
+    apply (Int.quotientSpanEquivZMod 2).toMulEquiv 
+  have : (ℤ[X] ⧸ I) ≃* ZMod 2 := by 
+    exact ZxquotIZmod2.trans zquotideal2eqzmod2
+  have zmod2isfield : IsField (ZMod 2) := by 
+    exact Semifield.toIsField (ZMod 2)
+  exact MulEquiv.isField zmod2isfield this
+\end{lean}
+
+The next bit of the proof, showing the radical, was actually much more computational than I had expected it to be, and I diverged from a very polynomial bashing approach in my homework's proof for something much more intuitive. Lean helped me realize that I could use and rewrite our elements to be in the span of the ideals and use a \emph{specific} power to do this which improved the proof dramatically.
+
+\medskip
+
+I began running into problems around here as well. Indeed, working with chains of ideals and their order proved difficult, especially when I wanted to rely on \verb|apply?| to clear a goal I felt was obvious. But this also lead me to use some easier ways to do the proof including the use of properties of prime ideals to force the proof a little more quickly. 
+
+\medskip
+
+Finally, approaching the last part of the proof was extremely daunting, and required something similar to induction that I spent a great deal of time hunting around in the documentation for. Additionally, I did improve the original proof I had by removing an argument that relied on some handwavy arguments with polynomials to one about chains of ideals. I did however, find trouble showing some basic inclusions or exclusions for certain set elements which are sorried out. 
+
+\section{Conclusion}
+
+All in all, I found the work to be quite fun, and it certainly improved my confidence in formalizing things after finishing the course. I feel confident I could approach almost any algebra textbook and through frankly, very little extra time, approach many of the more technical (maybe just better oriented to lean) proofs and exericses. I took this course knowing that I wanted formalization of undergraduate texts to be a post-grad hobby for me, and I feel much more confident after this experience that that will happen. 
+
+\medskip
+\noindent
+I am also excited to see how much better my proof-writing has improved by using the software. I found myself thinking much more tactically and using better techniques because of the software, and because I have been using it for so long now. I think this is excellent anecdotal evidence for pedagogy being informed by Lean. Safe to say, I'm a believer and I think it has made me a better math student.  
+
+\section{Works Cited}
+
+\begin{thebibliography}{9}
+
+\bibitem{atiyah1969}
+M.~F. Atiyah and I.~G. Macdonald,
+\textit{Introduction to Commutative Algebra}.
+Addison-Wesley, 1969.
+
+\bibitem{gross2025leantex}
+R.~Gross,
+\textit{LeanTeX: Lean4 and InfoView Integration for LaTeX}, 2025.
+{\tt https://github.com/rgrossharv/LeanTeX}.
+
+\bibitem{asher2025leanexplore}
+J.~Asher,
+\textit{LeanExplore: A Search Engine for Lean 4 Declarations}, 2025.
+{\tt https://arxiv.org/abs/2506.11085}.
+
+\end{thebibliography}
+
+\small
+
+\section{Appendix}
+
+\subsection{More Lean Code}
+
+\begin{lean}
+theorem Jisprimary : J.IsPrimary := by 
+  have jradeqi : I = J.radical := by 
+    rw[Ideal.ext_iff]
+    intro x
+    constructor
+    · intro h 
+      rw [Ideal.mem_radical_iff]
+      have := Ideal.mem_span_pair.mp h 
+      rcases this with ⟨a, b, hab⟩
+      rw [← hab]
+      use 2
+      apply Ideal.mem_span_pair.mpr 
+      use (a*b*X +a^2)
+      use (b^2 * X)
+      ring_nf 
+    intro h 
+    rw [Ideal.mem_radical_iff] at h 
+    rcases h with ⟨r,hr⟩ 
+    have jsubseti : J ≤ I := by 
+      apply Ideal.span_le.mpr 
+      simp [Set.subset_def]
+      constructor
+      · apply Ideal.mem_span_pair.mpr
+        use 2
+        use 0
+        ring
+      apply Ideal.mem_span_pair.mpr
+      use (-X)
+      use 3
+      ring
+    have Iprime : I.IsPrime := by 
+      exact Ideal.IsMaximal.isPrime Iismaximal
+    have : x ^ r ∈ I := by 
+      exact jsubseti hr 
+    exact Ideal.IsPrime.mem_of_pow_mem Iprime r (jsubseti hr)
+  have : J.radical.IsMaximal := by 
+    rw [← jradeqi]
+    exact Iismaximal
+  exact Ideal.isPrimary_of_isMaximal_radical this
+\end{lean}
+
+We skip the last part of the proof. 
+
+\subsection{Original Poorer Proof}
+
+\noindent
+\textbf{Proof:} We begin by observing that $\mathfrak{m} = (2,t)$ is indeed maximal. This is apparent since we have $$\mathbb{Z}[t]/\mathfrak{m} \cong \mathbb{Z}/2\mathbb{Z}$$ We construct the homomorphism, $\psi:\mathbb{Z}[t] \to \mathbb{Z}/2\mathbb{Z}$ defined by evaluation for $t=0$ and reduction modulo $2$. It follows that this is a homomorphism since we know that evaluation maps and reduction modulo $p$ is a homomorphism from \emph{Math 122}. Thus, $$a_nt^n + a_{n-1}t^{n-1}+\dots + a_1t+a_0 = p(t) \in \mathbb{Z}[t] \qquad \psi(p(t)) = a_0 \text{ mod } 2$$ Hence, let $x \in (2,t)$ Thus, we know that$$x = t\cdot p(t) + 2 \cdot q(t) \qquad p(t),q(t)\in \mathbb{Z}[t]$$ Clearly the first term since every expansion contains $t$ is sent to $0$ and the second term clearly vanishes under modular arithmetic. Thus, $x \in \ker(\psi)$. Now, if $x \in \ker(\psi)$ we know that it is some polynomial with a constant term that is a multiple of $2$. Thus, we can write it as $$x = t\cdot p(t) + 2 \cdot b \qquad p(t) \in \mathbb{Z}[t], b \in \mathbb{Z}$$ Which is precisely the description of a term in $(2,t)$ so, $x \in (2,t)$ Hence, since $\ker(\psi) =(2,t)$ we can apply the first isomorphism theorem of rings and see that $\mathbb{Z}[t]/\ker(\psi) = \mathbb{Z}[t]/\mathfrak{m} \cong \mathbb{Z}/2\mathbb{Z}$. 
+
+\medskip
+\noindent
+Now, we wish to examine $\mathfrak{q} = (4,t)$. In order to show that $(4,t)$ is $\mathfrak{m}$-primary we will show that $\mathfrak{m}$ is its radical. Hence, consider, $x \in (2,t)$ we write $x = 2 \cdot p(t) + t \cdot q(t)$ and thus we have that $x^2 = 4\cdot p(t)^2+2tp(t)q(t) + t^2q(t)^2$ Which is clearly some $4\cdot P(t) + t \cdot Q(t) \in (4,t)$. Thus we have that $(2,t) \subseteq \text{Rad}(4,t)$. 
+
+\medskip
+\noindent
+Now, we wish to consider some $f(t)\in \text{Rad}(4,t)$. Hence, we know that $f(t)^k = 4\cdot p(t)+t\cdot q(t)$ Clearly then $f(t) = a_nt^n + \dots +a_0$ must have some $a_0^k \equiv 0 \mod 4 \implies a_0 \in (2)$ from middle school algebra. And since the polynomial part is clearly contained in $t \cdot Q(t)$ beyond that, we know that $f(t)\in(2,t)$. Thus the equality, $\text{Rad}(4,t)=(2,t)$ which is a prime ideal since it is maximal and we have that $\mathfrak{q}$ is $\mathfrak{m}$-primary. 
+
+\medskip
+\noindent
+Now, we wish to finish the problem by demonstrating that $(2,t)^k \not = (4,t)$ for any choice of $k \in \mathbb{Z}$ This becomes pretty evident by looking at their generators since $(2,t)^k = (2^k, \dots, 2^{k-i}t^i, \dots, t^k)$ Where as in $(4,t)$ we have an arbitrary $t$ which means we can have the polynomial, $4+3t \in (4,t)$ and this cannot occur in any $(2,t)^k$ since any non $k$ power of $t$ must have an even coefficient and $4+3t$ obviously does not. Thus, we know that they are not equal. \textbf{Q.E.D.}
+
+\end{document}

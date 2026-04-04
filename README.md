@@ -51,8 +51,8 @@ For best Unicode symbol coverage, install one of these monospace fonts (checked 
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/rgrossharv/LeanTeXv2.git
-cd LeanTeXv2
+git clone https://github.com/rgrossharv/LeanTeX.git
+cd LeanTeX
 ```
 
 ### 2. Install Pygments
@@ -264,7 +264,7 @@ Public domain dedication via The Unlicense (see `LICENSE`).
 
 If you used LeanTeX in your work and want to give credit (you definitely don't have to!):
 
-**MLA:** Gross, Ryland. *LeanTeX v2*. 2026. GitHub, https://github.com/rgrossharv/LeanTeXv2.
+**MLA:** Gross, Ryland. *LeanTeX v2*. 2026. GitHub, https://github.com/rgrossharv/LeanTeX.
 
 **BibTeX:**
 ```bibtex
@@ -272,6 +272,6 @@ If you used LeanTeX in your work and want to give credit (you definitely don't h
   author  = {Gross, Ryland},
   title   = {{LeanTeX v2}},
   year    = {2026},
-  url     = {https://github.com/rgrossharv/LeanTeXv2},
+  url     = {https://github.com/rgrossharv/LeanTeX},
 }
 ```

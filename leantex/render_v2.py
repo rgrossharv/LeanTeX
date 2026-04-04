@@ -159,6 +159,7 @@ def write_generated_assets_v2(
         )
 
         has_error = any(m.severity == "error" for m in snip_msgs)
+        has_output = bool(output_text.strip())
 
         # v2 generated tex only needs raw paths (no sanitized paths, no literate mappings)
         block_lines.append(
@@ -180,6 +181,10 @@ def write_generated_assets_v2(
         block_lines.append(
             f"\\expandafter\\gdef\\csname leantex@haserror@{snip.index}\\endcsname"
             f"{{{1 if has_error else 0}}}"
+        )
+        block_lines.append(
+            f"\\expandafter\\gdef\\csname leantex@hasoutput@{snip.index}\\endcsname"
+            f"{{{1 if has_output else 0}}}"
         )
         if snip.name:
             block_lines.append(
@@ -208,6 +213,7 @@ def write_generated_assets_v2(
     extracted_has_error = any(
         m.severity == "error" for m in (document_messages or [])
     )
+    extracted_has_output = bool(extracted_output_text.strip())
 
     lines.append(
         "\\expandafter\\gdef\\csname leantex@extractedoutrawpath\\endcsname"
@@ -216,6 +222,10 @@ def write_generated_assets_v2(
     lines.append(
         "\\expandafter\\gdef\\csname leantex@extractedhaserror\\endcsname"
         f"{{{1 if extracted_has_error else 0}}}"
+    )
+    lines.append(
+        "\\expandafter\\gdef\\csname leantex@extractedhasoutput\\endcsname"
+        f"{{{1 if extracted_has_output else 0}}}"
     )
     lines.append("")
 

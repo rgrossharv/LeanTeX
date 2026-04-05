@@ -513,7 +513,7 @@ _SKIP_DISCOVERY_DIRS = {
 }
 
 # ---------------------------------------------------------------------------
-# Auto-generation of Lake projects for standalone .tex files
+# Central Lake workspace — one Mathlib download shared by every build
 # ---------------------------------------------------------------------------
 
 _KNOWN_PACKAGES: dict[str, dict[str, str]] = {
@@ -538,6 +538,16 @@ _KNOWN_PACKAGES: dict[str, dict[str, str]] = {
 # Known-good defaults: Mathlib v4.28.0 requires Lean v4.28.0.
 _DEFAULT_LEAN_TOOLCHAIN = "leanprover/lean4:v4.28.0"
 _DEFAULT_MATHLIB_VERSION = "v4.28.0"
+
+_CENTRAL_WORKSPACE_REL = Path(".leantex") / "workspace"
+
+
+def _central_workspace_dir() -> Path:
+    """Return ``~/.leantex/workspace/`` (the single machine-wide Lake project)."""
+    override = os.environ.get("LEANTEX_WORKSPACE")
+    if override:
+        return Path(override).expanduser().resolve()
+    return (Path.home() / _CENTRAL_WORKSPACE_REL).resolve()
 
 
 def _detect_required_packages(snippets: list[Snippet]) -> set[str]:
@@ -608,31 +618,33 @@ def _find_lake() -> str | None:
     return None
 
 
-def _auto_setup_lake_project(
-    generated_dir: Path,
-    snippets: list[Snippet],
-) -> bool:
-    """Auto-generate lakefile.lean + lean-toolchain and fetch packages.
+def _ensure_central_workspace(snippets: list[Snippet]) -> Path | None:
+    """Ensure the central ``~/.leantex/workspace/`` Lake project is ready.
 
-    Returns True if a usable Lake project now exists at *generated_dir*.
+    * Detects required packages from *snippets*.
+    * Writes ``lakefile.lean`` + ``lean-toolchain`` if missing or stale.
+    * Runs ``lake update`` + ``lake exe cache get`` **only** on first use
+      or when the lakefile changes.
+    * Returns the workspace path, or *None* if setup failed.
     """
     packages = _detect_required_packages(snippets)
-    generated_dir.mkdir(parents=True, exist_ok=True)
+    ws = _central_workspace_dir()
+    ws.mkdir(parents=True, exist_ok=True)
 
-    lakefile_path = generated_dir / "lakefile.lean"
-    toolchain_path = generated_dir / "lean-toolchain"
-    lake_dir = generated_dir / ".lake"
+    lakefile_path = ws / "lakefile.lean"
+    toolchain_path = ws / "lean-toolchain"
+    lake_dir = ws / ".lake"
 
     lakefile_content = _generate_lakefile_content(packages)
-    # Use the default toolchain that matches our Mathlib pin when external
-    # packages are needed; otherwise detect the user's current Lean version.
     if packages:
         toolchain = os.environ.get("LEANTEX_LEAN_TOOLCHAIN", _DEFAULT_LEAN_TOOLCHAIN)
     else:
         toolchain = _detect_lean_toolchain()
     toolchain_content = toolchain + "\n"
 
-    # Check whether the existing lakefile already matches.
+    # ------------------------------------------------------------------
+    # Only touch files / run network commands when something changed.
+    # ------------------------------------------------------------------
     lakefile_changed = True
     if lakefile_path.exists():
         try:
@@ -647,65 +659,70 @@ def _auto_setup_lake_project(
     elif not toolchain_path.exists():
         toolchain_path.write_text(toolchain_content, encoding="utf-8")
 
-    # Fetch packages when the .lake directory is missing or lakefile changed.
-    need_fetch = packages and (not lake_dir.exists() or lakefile_changed)
-    if need_fetch:
-        lake = _find_lake()
-        if lake is None:
-            print(
-                "[leantex] warning: `lake` not found — cannot fetch packages. "
-                "Install Lean 4 via elan (https://github.com/leanprover/elan) "
-                "and try again.",
-                flush=True,
-            )
-            return _has_lakefile(generated_dir)
+    # Already fully set up?
+    if not lakefile_changed and lake_dir.exists():
+        return ws
 
-        pkg_names = ", ".join(sorted(packages))
-        print(f"[leantex] auto-generated Lake project in {generated_dir}", flush=True)
-        print(f"[leantex] detected dependencies: {pkg_names}", flush=True)
+    # No external packages → lakefile alone is enough.
+    if not packages:
+        return ws
+
+    # ------------------------------------------------------------------
+    # First-time (or changed) setup: fetch packages once for the machine.
+    # ------------------------------------------------------------------
+    lake = _find_lake()
+    if lake is None:
         print(
-            "[leantex] running `lake update` to fetch packages "
-            "(first build may take several minutes)...",
+            "[leantex] warning: `lake` not found — cannot fetch packages. "
+            "Install Lean 4 via elan (https://github.com/leanprover/elan) "
+            "and try again.",
             flush=True,
         )
-        proc = subprocess.run(
-            [lake, "update"],
-            cwd=generated_dir,
+        return ws if _has_lakefile(ws) else None
+
+    pkg_names = ", ".join(sorted(packages))
+    print(f"[leantex] central workspace: {ws}", flush=True)
+    print(f"[leantex] detected dependencies: {pkg_names}", flush=True)
+    print(
+        "[leantex] running `lake update` to fetch packages "
+        "(first install only — subsequent builds reuse this cache)...",
+        flush=True,
+    )
+    proc = subprocess.run(
+        [lake, "update"],
+        cwd=ws,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        capture_output=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        print(f"[leantex] warning: `lake update` failed:\n{proc.stderr}", flush=True)
+        return ws if _has_lakefile(ws) else None
+    print("[leantex] `lake update` complete.", flush=True)
+
+    if "Mathlib" in packages:
+        print("[leantex] downloading Mathlib cache...", flush=True)
+        cache_proc = subprocess.run(
+            [lake, "exe", "cache", "get"],
+            cwd=ws,
             text=True,
             encoding="utf-8",
             errors="replace",
             capture_output=True,
             check=False,
         )
-        if proc.returncode != 0:
-            print(f"[leantex] warning: `lake update` failed:\n{proc.stderr}", flush=True)
-            return _has_lakefile(generated_dir)
-        print("[leantex] `lake update` complete.", flush=True)
-
-        # For Mathlib: download precompiled .olean cache to avoid compiling
-        # from source (which can take hours).
-        if "Mathlib" in packages:
-            print("[leantex] downloading Mathlib cache...", flush=True)
-            cache_proc = subprocess.run(
-                [lake, "exe", "cache", "get"],
-                cwd=generated_dir,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                capture_output=True,
-                check=False,
+        if cache_proc.returncode != 0:
+            print(
+                "[leantex] note: `lake exe cache get` returned non-zero "
+                "(this may be fine for your Mathlib version).",
+                flush=True,
             )
-            if cache_proc.returncode != 0:
-                # Older Mathlib or different cache mechanism — not fatal.
-                print(
-                    "[leantex] note: `lake exe cache get` returned non-zero "
-                    "(this may be fine for your Mathlib version).",
-                    flush=True,
-                )
-            else:
-                print("[leantex] Mathlib cache download complete.", flush=True)
+        else:
+            print("[leantex] Mathlib cache download complete.", flush=True)
 
-    return _has_lakefile(generated_dir)
+    return ws
 
 
 def _discover_lake_project_candidates(tex_dir: Path) -> list[Path]:
@@ -810,18 +827,12 @@ def process(tex_path: Path, project_root_override: Path | None = None) -> BuildR
     ranges = extracted.ranges
 
     # --- Resolve a usable Lake project root before building ----------------
-    # Priority: 1) existing lakefile at project_root  2) nearby Lake project
-    #           3) auto-generate a Lake project in generated_dir
+    # Priority: 1) existing lakefile at project_root (user's own project)
+    #           2) central ~/.leantex/workspace/ (one Mathlib for the machine)
     if not _has_lakefile(context.project_root):
-        candidates = [
-            c for c in _discover_lake_project_candidates(context.tex_dir)
-            if c.resolve() != context.project_root.resolve()
-        ]
-        if candidates:
-            context.project_root = candidates[0]
-        else:
-            if _auto_setup_lake_project(context.generated_dir, snippets):
-                context.project_root = context.generated_dir
+        ws = _ensure_central_workspace(snippets)
+        if ws is not None:
+            context.project_root = ws
 
     extracted_text = context.extracted_lean_path.read_text(encoding="utf-8")
     signature = _build_signature(context, extracted_text, snippets, shared_context)

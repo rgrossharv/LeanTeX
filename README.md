@@ -1,6 +1,6 @@
 # LeanTeX v2
 
-LeanTeX v2 embeds Lean 4 snippets directly in LaTeX with **minted-based syntax highlighting** and automatic infoview/diagnostics rendering into your PDF.
+LeanTeX v2 embeds Lean 4 snippets directly in LaTeX with **minted-based syntax highlighting** and automatic infoview/diagnostics rendering into your PDF. I made LeanTeX primarily to help me make nice looking projects in Harvard's Math 161 class. The program is mostly vibecoded but has been genuinely useful to me after much troubleshooting and human intervention. I hope you find it useful!
 
 v2 uses [minted](https://ctan.org/pkg/minted) + [Pygments](https://pygments.org/) for true syntax highlighting (colored keywords, tactics, types, strings, comments) and requires **XeLaTeX** or **LuaLaTeX** for native Unicode support.
 
@@ -260,18 +260,6 @@ Run the full end-to-end test (requires Lean + latexmk):
 
 Public domain dedication via The Unlicense (see `LICENSE`).
 
-## Citation
+## AI Acknowlegdement
 
-If you used LeanTeX in your work and want to give credit (you definitely don't have to!):
-
-**MLA:** Gross, Ryland. *LeanTeX v2*. 2026. GitHub, https://github.com/rgrossharv/LeanTeX.
-
-**BibTeX:**
-```bibtex
-@software{gross2026leantexv2,
-  author  = {Gross, Ryland},
-  title   = {{LeanTeX v2}},
-  year    = {2026},
-  url     = {https://github.com/rgrossharv/LeanTeX},
-}
-```
+LeanTeX was built with substantial assistance from OpenAI's Codex tool with ChatGPT 5.4 and Claude Code's Opus 4.6 and 4.7. 

@@ -98,7 +98,15 @@ def _tex_uses_leantex(tex_path: Path) -> bool:
             continue
         for m in USEPACKAGE_LINE_RE.finditer(line):
             pkgs = [p.strip() for p in m.group("pkgs").split(",") if p.strip()]
-            if any(p in pkgs for p in ("leantex", "leantexonefile", "leantexv2", "leantexv2onefile")):
+            if any(
+                p in pkgs
+                for p in (
+                    "leantex",
+                    "leantexonefile",
+                    "leantexv2",
+                    "leantexv2onefile",
+                )
+            ):
                 return True
     return False
 
@@ -190,7 +198,7 @@ def cmd_install_tex(args: argparse.Namespace) -> int:
         return 1
 
     print(f"[leantex] installed LaTeX package to {installed}")
-    print(r"[leantex] you can now use \usepackage{leantex}")
+    print(r"[leantex] you can now use \usepackage{leantexv2}")
     print(r"[leantex] installed ~/.latexmkrc auto-hook for LeanTeX")
     return 0
 

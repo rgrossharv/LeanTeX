@@ -1,0 +1,22 @@
+\documentclass{article}
+\usepackage[onefile]{leantexv2}
+
+\begin{document}
+
+\section*{LeanTeX v2.5}
+
+\leantexconfig{natcheck}{infoview=goals}
+\begin{minted}[label=natcheck]{lean}
+#check Nat
+example : 1 + 1 = 2 := by decide
+\end{minted}
+
+\leantexoutput{natcheck}
+
+\leantex[infoview=lines:3]{
+#check List.map
+example : True := by
+  trivial
+}
+
+\end{document}

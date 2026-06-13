@@ -1,7 +1,9 @@
-"""Render pipeline for LeanTeX v2 (minted-based).
+r"""Render pipeline for LeanTeX v2.5 (minted-based).
 
-v2 always uses raw UTF-8 files -- no U+XXXX sanitization is needed since
-minted/pygments handles Unicode natively via XeLaTeX/LuaLaTeX.
+v2.5 always uses raw UTF-8 files -- no U+XXXX sanitization is needed since
+minted/pygments handles Unicode natively via XeLaTeX/LuaLaTeX. Native minted
+blocks and ``\leantex{...}`` snippets are output-only by default, so generated
+code files are written only when LeanTeX itself needs to render code.
 """
 
 from __future__ import annotations
@@ -18,6 +20,22 @@ def _safe_text_for_file(text: str) -> str:
     return text.rstrip("\n") + "\n" if text else ""
 
 
+def _needs_code_file(snip: Snippet) -> bool:
+    return snip.show.strip().lower() in {"both", "code"}
+
+
+def _safe_csname_part(text: str) -> str:
+    return re.sub(r"[^A-Za-z0-9:_-]+", "@", text.strip())
+
+
+def _prune_stale_snippet_files(snippets_dir: Path, expected: set[Path]) -> None:
+    if not snippets_dir.exists():
+        return
+    for path in snippets_dir.glob("snippet_*.*"):
+        if path not in expected and path.is_file():
+            path.unlink()
+
+
 def write_generated_assets_v2(
     generated_tex_path: Path,
     snippets_dir: Path,
@@ -25,29 +43,23 @@ def write_generated_assets_v2(
     snippet_messages: dict[int, list[LeanMessage]],
     document_messages: list[LeanMessage] | None = None,
 ) -> None:
-    """Write v2 generated assets: raw UTF-8 files + leantexv2.generated.tex."""
+    """Write v2.5 generated assets: raw UTF-8 files + leantexv2.generated.tex."""
     snippets_dir.mkdir(parents=True, exist_ok=True)
     generated_tex_path.parent.mkdir(parents=True, exist_ok=True)
     artifacts_dir = snippets_dir.parent
 
     lines: list[str] = [
-        "% LeanTeX v2 generated file. Do not edit manually.",
+        "% LeanTeX v2.5 generated file. Do not edit manually.",
         r"\expandafter\gdef\csname leantex@generatedloaded\endcsname{1}",
         "",
     ]
     block_lines: list[str] = []
+    expected_files: set[Path] = set()
 
     for snip in snippets:
-        # v2 only writes raw UTF-8 files (no sanitized versions needed)
-        code_raw_file = snippets_dir / f"snippet_{snip.index:03}.code.raw.lean"
         out_raw_file = snippets_dir / f"snippet_{snip.index:03}.out.raw.txt"
         snip_msgs = snippet_messages.get(snip.index, [])
 
-        write_text_if_changed(
-            code_raw_file,
-            _safe_text_for_file(snip.code),
-            encoding="utf-8",
-        )
         output_text = format_messages(
             snip_msgs,
             infoview_mode=snip.infoview,
@@ -58,22 +70,16 @@ def write_generated_assets_v2(
             _safe_text_for_file(output_text),
             encoding="utf-8",
         )
+        expected_files.add(out_raw_file)
 
         has_error = any(m.severity == "error" for m in snip_msgs)
         has_output = bool(output_text.strip())
 
-        # v2 generated tex only needs raw paths (no sanitized paths, no literate mappings)
         block_lines.append(
             f"\\expandafter\\gdef\\csname leantex@show@{snip.index}\\endcsname{{{snip.show}}}"
         )
-        # Still write codepath for compatibility with the loader detection
         block_lines.append(
-            f"\\expandafter\\gdef\\csname leantex@codepath@{snip.index}\\endcsname"
-            f"{{{code_raw_file.as_posix()}}}"
-        )
-        block_lines.append(
-            f"\\expandafter\\gdef\\csname leantex@coderawpath@{snip.index}\\endcsname"
-            f"{{{code_raw_file.as_posix()}}}"
+            f"\\expandafter\\gdef\\csname leantex@source@{snip.index}\\endcsname{{{snip.source}}}"
         )
         block_lines.append(
             f"\\expandafter\\gdef\\csname leantex@outrawpath@{snip.index}\\endcsname"
@@ -87,9 +93,29 @@ def write_generated_assets_v2(
             f"\\expandafter\\gdef\\csname leantex@hasoutput@{snip.index}\\endcsname"
             f"{{{1 if has_output else 0}}}"
         )
+        if _needs_code_file(snip):
+            code_raw_file = snippets_dir / f"snippet_{snip.index:03}.code.raw.lean"
+            write_text_if_changed(
+                code_raw_file,
+                _safe_text_for_file(snip.code),
+                encoding="utf-8",
+            )
+            expected_files.add(code_raw_file)
+            block_lines.append(
+                f"\\expandafter\\gdef\\csname leantex@codepath@{snip.index}\\endcsname"
+                f"{{{code_raw_file.as_posix()}}}"
+            )
+            block_lines.append(
+                f"\\expandafter\\gdef\\csname leantex@coderawpath@{snip.index}\\endcsname"
+                f"{{{code_raw_file.as_posix()}}}"
+            )
         if snip.name:
+            safe_name = _safe_csname_part(snip.name)
             block_lines.append(
                 f"\\expandafter\\gdef\\csname leantex@name@{snip.index}\\endcsname{{{snip.name}}}"
+            )
+            block_lines.append(
+                f"\\expandafter\\gdef\\csname leantex@named@{safe_name}\\endcsname{{{snip.index}}}"
             )
         if snip.code_size:
             block_lines.append(
@@ -131,5 +157,6 @@ def write_generated_assets_v2(
     lines.append("")
 
     lines.extend(block_lines)
+    _prune_stale_snippet_files(snippets_dir, expected_files)
 
     write_text_if_changed(generated_tex_path, "\n".join(lines), encoding="utf-8")

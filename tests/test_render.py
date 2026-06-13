@@ -8,6 +8,12 @@ from leantex.render import (
 
 
 class RenderTests(unittest.TestCase):
+    def test_empty_success_message_is_informative(self) -> None:
+        out = format_messages([])
+        self.assertIn("=== LeanTeX Status ===", out)
+        self.assertIn("Lean accepted this snippet.", out)
+        self.assertNotIn("(no messages)", out)
+
     def test_collapses_long_infoview_state_to_messages(self) -> None:
         msgs = [
             LeanMessage(

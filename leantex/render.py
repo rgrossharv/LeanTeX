@@ -383,7 +383,14 @@ def format_messages(
     infoview_lines: int = INFOVIEW_STATE_LINE_LIMIT,
 ) -> str:
     if not messages:
-        return "(no messages)"
+        return "\n".join(
+            [
+                "=== LeanTeX Status ===",
+                "[info] 1:1: Lean accepted this snippet.",
+                "=== Infoview Messages ===",
+                "[info] 1:1: No diagnostics or tactic state were produced.",
+            ]
+        )
     deduped: list[LeanMessage] = []
     seen: set[tuple[str, int | None, int | None, str, str]] = set()
     for msg in messages:

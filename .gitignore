@@ -15,6 +15,7 @@ dist/
 
 # OS/editor
 .DS_Store
+._*
 .vscode/
 .idea/
 

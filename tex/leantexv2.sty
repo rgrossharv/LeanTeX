@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{leantexv2}[2026/04/04 LeanTeX v2 -- minted-based Lean 4 integration]
+\ProvidesPackage{leantexv2}[2026/06/12 LeanTeX v2.5 -- minted-based Lean 4 integration]
 
 % ────────────────────────────────────────────────────────────
 %  Options
@@ -292,6 +292,8 @@
 
 % Minted style override
 \newcommand{\leantexsetmintedstyle}[1]{\usemintedstyle{#1}}
+\newcommand{\leantexconfig}[2]{}
+\let\leantexconfigure\leantexconfig
 
 % ────────────────────────────────────────────────────────────
 %  Auto-build machinery (identical to v1)
@@ -435,53 +437,103 @@
     ]{text}{#2}
   \end{tcolorbox}
 }
+\newcommand{\leantex@renderplainoutput}[2]{%
+  \par\medskip
+  \inputminted[
+    fontsize=#1,
+    breaklines=true,
+    breakanywhere=true,
+    tabsize=2,
+    frame=lines,
+    framesep=2mm\leantex@mintedoutopts
+  ]{text}{#2}%
+  \par\medskip
+}
 
 % ────────────────────────────────────────────────────────────
 %  Main render dispatch
 % ────────────────────────────────────────────────────────────
 \newcommand{\leantex@showoutput}{output}
 \newcommand{\leantex@showcode}{code}
-\newcommand{\leantex@render}[1]{%
-  \ifcsname leantex@codepath@#1\endcsname
-    \edef\lltshow{\leantex@get{show}{#1}}%
-    \edef\lltcoderawpath{\leantex@get{coderawpath}{#1}}%
+\newcommand{\leantex@shownone}{none}
+\newcommand{\leantex@sourcelean}{lean}
+\newcommand{\leantex@missing}[1]{%
+  \begin{tcolorbox}[
+    colback=leantexWarnBg,
+    colframe=leantexWarnFrame,
+    boxrule=0.4pt,
+    arc=1.5pt,
+    toptitle=2pt,
+    bottomtitle=2pt,
+    title={\sffamily\small\bfseries LeanTeX v2.5},
+    colbacktitle=leantexWarnTitleBg,
+    coltitle=white
+  ]
+    Missing generated data for #1. Run \texttt{leantex build} first.
+  \end{tcolorbox}
+}
+\newcommand{\leantex@renderoutputbyindex}[2]{%
+  \ifcsname leantex@outrawpath@#1\endcsname
     \edef\lltoutrawpath{\leantex@get{outrawpath}{#1}}%
     \edef\llthaserror{\leantex@get{haserror}{#1}}%
+    \edef\lltsource{\leantex@get{source}{#1}}%
+    \def\lltoutsizecmd{\leantex@defaultoutsize}%
+    \ifcsname leantex@outsize@#1\endcsname
+      \expandafter\let\expandafter\lltoutsizecmd\csname leantex@outsize@#1\endcsname
+    \fi
+    \ifdefstrequal{\lltsource}{\leantex@sourcelean}{%
+      \leantex@renderoutput{\lltoutsizecmd}{\lltoutrawpath}{\llthaserror}%
+    }{%
+      \leantex@renderplainoutput{\lltoutsizecmd}{\lltoutrawpath}%
+    }%
+  \else
+    \leantex@missing{#2}%
+  \fi
+}
+\newcommand{\leantex@render}[1]{%
+  \ifcsname leantex@outrawpath@#1\endcsname
+    \edef\lltshow{\leantex@get{show}{#1}}%
     %
     \def\lltcodesizecmd{\leantex@defaultcodesize}%
     \ifcsname leantex@codesize@#1\endcsname
       \expandafter\let\expandafter\lltcodesizecmd\csname leantex@codesize@#1\endcsname
     \fi
-    \def\lltoutsizecmd{\leantex@defaultoutsize}%
-    \ifcsname leantex@outsize@#1\endcsname
-      \expandafter\let\expandafter\lltoutsizecmd\csname leantex@outsize@#1\endcsname
-    \fi
     %
     % Show code block (unless show=output)
-    \ifdefstrequal{\lltshow}{\leantex@showoutput}{}{%
-      \leantex@rendercode{\lltcodesizecmd}{\lltcoderawpath}%
+    \ifdefstrequal{\lltshow}{\leantex@shownone}{}{%
+      \ifdefstrequal{\lltshow}{\leantex@showoutput}{}{%
+        \ifcsname leantex@coderawpath@#1\endcsname
+          \edef\lltcoderawpath{\leantex@get{coderawpath}{#1}}%
+          \leantex@rendercode{\lltcodesizecmd}{\lltcoderawpath}%
+        \fi
+      }%
     }%
     %
     % Show output block (unless show=code)
-    \ifdefstrequal{\lltshow}{\leantex@showcode}{}{%
-      \leantex@renderoutput{\lltoutsizecmd}{\lltoutrawpath}{\llthaserror}%
+    \ifdefstrequal{\lltshow}{\leantex@shownone}{}{%
+      \ifdefstrequal{\lltshow}{\leantex@showcode}{}{%
+        \leantex@renderoutputbyindex{#1}{block #1}%
+      }%
     }%
   \else
-    \begin{tcolorbox}[
-      colback=leantexWarnBg,
-      colframe=leantexWarnFrame,
-      boxrule=0.4pt,
-      arc=1.5pt,
-      toptitle=2pt,
-      bottomtitle=2pt,
-      title={\sffamily\small\bfseries LeanTeX v2},
-      colbacktitle=leantexWarnTitleBg,
-      coltitle=white
-    ]
-      Missing generated data for block #1. Run \texttt{leantex build} first.
-    \end{tcolorbox}
+    \leantex@missing{block #1}%
   \fi
 }
+
+\newcommand{\leantexoutput}[2][]{%
+  \def\leantex@requestedtitle{#1}%
+  \ifcsname leantex@outrawpath@#2\endcsname
+    \leantex@renderoutputbyindex{#2}{block #2}%
+  \else
+    \ifcsname leantex@named@#2\endcsname
+      \edef\leantex@requestedindex{\csname leantex@named@#2\endcsname}%
+      \leantex@renderoutputbyindex{\leantex@requestedindex}{#2}%
+    \else
+      \leantex@missing{#2}%
+    \fi
+  \fi
+}
+\let\leantexshow\leantexoutput
 
 % ────────────────────────────────────────────────────────────
 %  Total infoview
@@ -493,12 +545,25 @@
     \def\lltoutsizecmd{\leantex@defaultoutsize}%
     \leantex@renderoutput{\lltoutsizecmd}{\lltoutviewpath}{\llthaserror}%
   \else
-    \begin{tcolorbox}[colback=leantexWarnBg,colframe=leantexWarnFrame,title=LeanTeX v2]
-      Missing extracted infoview data. Run \texttt{leantex build} first.
-    \end{tcolorbox}
+    \leantex@missing{the extracted infoview}%
   \fi
 }
 \let\leantexshowextractedinfoview\totalinfoview
+
+% ────────────────────────────────────────────────────────────
+%  Hidden Lean snippet: render output only
+% ────────────────────────────────────────────────────────────
+\newcommand{\leantex}{%
+  \begingroup
+  \catcode`\#=12 %
+  \leantex@grab
+}
+\newcommand{\leantex@grab}[1][]{\leantex@grabbody}
+\long\def\leantex@grabbody#1{%
+  \endgroup
+  \stepcounter{leantexblock}%
+  \leantex@render{\arabic{leantexblock}}%
+}
 
 % ────────────────────────────────────────────────────────────
 %  The lean environment

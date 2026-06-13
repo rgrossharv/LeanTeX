@@ -18,6 +18,7 @@ class Snippet:
     infoview_lines: int = 4
     code_size: Optional[str] = None
     output_size: Optional[str] = None
+    source: str = "lean"
 
 
 @dataclass

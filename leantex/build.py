@@ -794,7 +794,7 @@ def _write_assets(context: BuildContext, snippets: list[Snippet],
                    by_snippet: dict[int, list[LeanMessage]],
                    document_messages: list[LeanMessage],
                    v2: bool) -> None:
-    """Dispatch to v1 or v2 asset writer."""
+    """Dispatch to the selected asset writer."""
     if v2:
         write_generated_assets_v2(
             generated_tex_path=context.generated_tex_path,
@@ -816,7 +816,7 @@ def _write_assets(context: BuildContext, snippets: list[Snippet],
 def process(tex_path: Path, project_root_override: Path | None = None) -> BuildResult:
     v2 = detect_v2_mode(tex_path)
     context = create_context(tex_path, project_root_override=project_root_override, v2=v2)
-    snippets = parse_tex_for_lean(context.tex_path)
+    snippets = parse_tex_for_lean(context.tex_path, include_minted=v2)
     shared_context = detect_shared_context_mode(context.tex_path)
 
     extracted = write_extracted_lean(

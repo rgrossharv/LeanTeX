@@ -143,9 +143,7 @@ code {
   margin-top: 36px;
   padding-top: 10px;
   display: flex;
-  justify-content: space-between;
-  gap: 18px;
-  flex-wrap: wrap;
+  justify-content: flex-end;
   font-size: 0.95rem;
 }
 

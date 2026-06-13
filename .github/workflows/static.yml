@@ -33,11 +33,17 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
+      - name: Prepare static site
+        run: |
+          mkdir -p _site/examples/minimal/projectex
+          cp index.html README.md LICENSE .nojekyll _site/
+          cp examples/minimal/minimal.pdf _site/examples/minimal/
+          cp examples/minimal/v25.pdf _site/examples/minimal/
+          cp examples/minimal/projectex/project.pdf _site/examples/minimal/projectex/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: '.'
+          path: '_site'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5

@@ -3,360 +3,398 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LeanTeX v2</title>
-<meta name="description" content="LeanTeX v2 embeds Lean 4 snippets directly in LaTeX with minted-based syntax highlighting and automatic infoview/diagnostics rendering into your PDF.">
-
+<title>LeanTeX v2.5</title>
+<meta name="description" content="LeanTeX v2.5 renders Lean 4 diagnostics and infoview-style output alongside native minted code blocks in LaTeX PDFs.">
 <style>
+:root {
+  --paper: #fbfaf7;
+  --ink: #1d2220;
+  --muted: #5d6661;
+  --line: #d9d5cb;
+  --panel: #ffffff;
+  --code: #f0f2ee;
+  --green: #235b4a;
+  --red: #9b3d35;
+  --gold: #9a7428;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-    background: #f8f8f2;
-    color: #222;
-    font-family: Georgia, "Times New Roman", serif;
-    max-width: 880px;
-    margin: auto;
-    padding: 40px 24px;
-    line-height: 1.6;
-}
-
-h1, h2, h3 {
-    font-family: "Times New Roman", serif;
-}
-
-h1 {
-    font-size: 2.5em;
-    margin-bottom: 0.2em;
-}
-
-h2 {
-    margin-top: 2em;
-}
-
-code {
-    background: #eeeeee;
-    padding: 3px 6px;
-    border-radius: 3px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-}
-
-pre {
-    background: #eeeeee;
-    padding: 15px;
-    overflow-x: auto;
-    border-left: 4px solid #888;
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.58;
 }
 
 a {
-    color: #0645ad;
-    text-decoration: underline;
+  color: var(--green);
+  text-underline-offset: 0.18em;
 }
 
 a:hover {
-    color: #0b0080;
+  color: var(--red);
+}
+
+.wrap {
+  width: min(1060px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+header {
+  border-bottom: 1px solid var(--line);
+  background: rgba(251, 250, 247, 0.96);
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 .nav {
-    margin-bottom: 24px;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
 }
 
-.footer {
-    margin-top: 60px;
-    font-size: 0.9em;
-    color: #555;
+.brand {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+}
+
+.hero {
+  padding: 70px 0 42px;
+  border-bottom: 1px solid var(--line);
+}
+
+.eyebrow {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--red);
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+
+h1 {
+  font-size: clamp(44px, 7vw, 82px);
+  line-height: 0.96;
+  letter-spacing: 0;
+  margin: 0;
+  max-width: 840px;
+}
+
+.hero p {
+  max-width: 760px;
+  color: var(--muted);
+  font-size: 20px;
+  margin: 22px 0 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  border: 1px solid var(--ink);
+  padding: 8px 14px;
+  color: var(--ink);
+  text-decoration: none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+}
+
+.button.primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+section {
+  padding: 44px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+h2 {
+  font-size: 30px;
+  margin: 0 0 18px;
+}
+
+h3 {
+  font-size: 19px;
+  margin: 0 0 8px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.two {
+  grid-template-columns: 1fr 1fr;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 18px;
+}
+
+.card p,
+.compact p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.tag {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+
+pre {
+  margin: 0;
+  padding: 18px;
+  background: var(--code);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+}
+
+.inline-code {
+  background: var(--code);
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+
+.steps {
+  display: grid;
+  gap: 12px;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 16px;
+  align-items: start;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+
+.step:first-child {
+  border-top: 0;
+}
+
+.label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--red);
+  font-size: 13px;
+}
+
+footer {
+  padding: 32px 0 48px;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .footer-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 16px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.footer-right {
-    text-align: right;
-}
+@media (max-width: 760px) {
+  .nav {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 16px 0;
+  }
 
-.example-item {
-    margin: 20px 0 28px;
-}
+  .hero {
+    padding-top: 44px;
+  }
 
-.example-item.featured {
-    border-left: 4px solid #444;
-    padding-left: 16px;
-    background: #f0f0ea;
-    padding: 16px 20px;
-    margin-bottom: 36px;
-}
+  .grid,
+  .two {
+    grid-template-columns: 1fr;
+  }
 
-.example-item.featured h2 {
-    margin-top: 0.4em;
-}
-
-.featured-label {
-    font-size: 0.8em;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #555;
-    margin-bottom: 4px;
-}
-
-.version-badge {
-    display: inline-block;
-    background: #3B4252;
-    color: #fff;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 0.75em;
-    padding: 3px 10px;
-    border-radius: 3px;
-    vertical-align: middle;
-    margin-left: 10px;
-    letter-spacing: 0.05em;
+  .step {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
 }
 </style>
 </head>
-
 <body>
+<header>
+  <div class="wrap nav">
+    <div class="brand">LeanTeX v2.5</div>
+    <nav class="links" aria-label="Primary">
+      <a href="#start">Start</a>
+      <a href="#versions">Versions</a>
+      <a href="#examples">Examples</a>
+      <a href="https://github.com/rgrossharv/LeanTeX">GitHub</a>
+    </nav>
+  </div>
+</header>
 
-<section id="homeView">
-<h1>LeanTeX <span class="version-badge">v2</span></h1>
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Lean 4 diagnostics for LaTeX PDFs</p>
+      <h1>LeanTeX v2.5</h1>
+      <p>
+        Write Lean in native <span class="inline-code">minted</span> blocks, then print the matching Lean diagnostics or infoview-style state wherever the PDF needs it.
+      </p>
+      <div class="actions">
+        <a class="button primary" href="https://github.com/rgrossharv/LeanTeX/releases/tag/v2.5.0">Download v2.5.0</a>
+        <a class="button" href="https://github.com/rgrossharv/LeanTeX">View repository</a>
+        <a class="button" href="./examples/minimal/v25.pdf">Open v2.5 PDF</a>
+      </div>
+    </div>
+  </section>
 
-<p>
-LeanTeX v2 embeds <strong>Lean 4 code snippets directly in LaTeX</strong>
-with full <strong>minted-based syntax highlighting</strong> (colored keywords, tactics, types, strings, comments)
-and renders Lean infoview output and diagnostics inside your compiled PDF.
-</p>
+  <section id="start">
+    <div class="wrap grid two">
+      <div>
+        <h2>Native minted first</h2>
+        <p>
+          v2.5 keeps the older LeanTeX v2 environment, but the recommended path is plain LaTeX: label a Lean minted block, configure the infoview mode, and call the output later.
+        </p>
+      </div>
+      <pre><code>\usepackage[onefile]{leantexv2}
 
-<div class="nav">
-<a href="./index.html">Home</a> |
-<a href="./index.html?view=requirements">Requirements</a> |
-<a href="./index.html?view=examples">Examples</a> |
-<a href="https://github.com/rgrossharv/LeanTeX">GitHub Repository</a>
-</div>
-
-<hr>
-
-<h2 id="installation">Installation</h2>
-
-<p>Before continuing, make sure you have all required tools installed (see the <a href="./index.html?view=requirements">Requirements</a> tab).</p>
-
-<h3>1) Clone</h3>
-<pre><code>git clone https://github.com/rgrossharv/LeanTeX.git
-cd LeanTeX</code></pre>
-
-<h3>2) Install Pygments</h3>
-<p>Pygments provides the <code>pygmentize</code> command that minted uses for syntax highlighting:</p>
-<pre><code>python3 -m pip install Pygments</code></pre>
-
-<h3>3) Install the LaTeX style files</h3>
-<p>This copies <code>leantexv2.sty</code> into your local TeX tree and installs the latexmk hook into <code>~/.latexmkrc</code>:</p>
-<pre><code>PYTHONPATH=. python3 -m leantex install-tex</code></pre>
-
-<p>You only need to do this once. If you ever move or rename the repo folder, re-run this command.</p>
-
-<h3>4) (For Mathlib projects) Download the Lean cache</h3>
-<p>If your document imports Mathlib, download the compiled cache once from the example project folder:</p>
-<pre><code>cd examples/minimal
-lake update</code></pre>
-<p>This downloads ~6&#8211;8 GB and only needs to be done once per Lean toolchain version.</p>
-
-<hr>
-
-<h2 id="usage">Quick Start</h2>
-
-<p>In your document preamble:</p>
-<pre><code>\usepackage[onefile]{leantexv2}</code></pre>
-
-<p>In your document body:</p>
-<pre><code>\begin{lean}[show=both]
+\leantexconfig{natcheck}{infoview=lines:4}
+\begin{minted}[label=natcheck]{lean}
 #check Nat.succ
 example : 1 + 1 = 2 := by decide
-\end{lean}</code></pre>
+\end{minted}
 
-<p>Build once:</p>
-<pre><code>PYTHONPATH=. python3 -m leantex build path/to/file.tex</code></pre>
+\leantexoutput{natcheck}</code></pre>
+    </div>
+  </section>
 
-<p>Watch mode (rebuild on file change):</p>
-<pre><code>PYTHONPATH=. python3 -m leantex watch path/to/file.tex</code></pre>
+  <section>
+    <div class="wrap grid">
+      <article class="card">
+        <span class="tag">Output</span>
+        <h3>Plain native display</h3>
+        <p>Minted-backed output is rendered without an extra LeanTeX title bar or tcolorbox.</p>
+      </article>
+      <article class="card">
+        <span class="tag">Control</span>
+        <h3>Infoview modes</h3>
+        <p>Use <span class="inline-code">auto</span>, <span class="inline-code">full</span>, <span class="inline-code">goals</span>, or <span class="inline-code">lines:N</span>.</p>
+      </article>
+      <article class="card">
+        <span class="tag">Space</span>
+        <h3>Lighter artifacts</h3>
+        <p>Output-only snippets avoid duplicated generated code files.</p>
+      </article>
+    </div>
+  </section>
 
-<h2>VS Code One-Click Build</h2>
+  <section id="install">
+    <div class="wrap">
+      <h2>Install</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="label">Clone</div>
+          <pre><code>git clone https://github.com/rgrossharv/LeanTeX.git
+cd LeanTeX</code></pre>
+        </div>
+        <div class="step">
+          <div class="label">Pygments</div>
+          <pre><code>python3 -m pip install Pygments</code></pre>
+        </div>
+        <div class="step">
+          <div class="label">TeX files</div>
+          <pre><code>PYTHONPATH=. python3 -m leantex install-tex</code></pre>
+        </div>
+        <div class="step">
+          <div class="label">Build</div>
+          <pre><code>PYTHONPATH=. python3 -m leantex build path/to/file.tex</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<p>
-LeanTeX v2 works with the
-<a href="https://marketplace.visualstudio.com/items?itemName=james-yu.latex-workshop" target="_blank" rel="noopener">LaTeX Workshop</a>
-extension. After installation, pressing the green &#9654; play button (or <code>Cmd+Alt+B</code>) runs the full pipeline automatically.
-See the <a href="https://github.com/rgrossharv/LeanTeX#readme">README</a> for the required <code>settings.json</code> configuration.
-</p>
+  <section id="versions">
+    <div class="wrap">
+      <h2>Versions</h2>
+      <div class="grid">
+        <article class="card">
+          <span class="tag">Current</span>
+          <h3>v2.5 on main</h3>
+          <p><a href="https://github.com/rgrossharv/LeanTeX/tree/main">main</a> is the recommended branch for native minted plus separate infoview output.</p>
+        </article>
+        <article class="card">
+          <span class="tag">Archive</span>
+          <h3>v2.0</h3>
+          <p><a href="https://github.com/rgrossharv/LeanTeX/tree/version2">version2</a> preserves the earlier minted-based LeanTeX v2 workflow.</p>
+        </article>
+        <article class="card">
+          <span class="tag">Archive</span>
+          <h3>v1.0</h3>
+          <p><a href="https://github.com/rgrossharv/LeanTeX/tree/version1">version1</a> preserves the original listings-based implementation.</p>
+        </article>
+      </div>
+    </div>
+  </section>
 
-<h2>LaTeX Usage</h2>
+  <section id="examples">
+    <div class="wrap">
+      <h2>Examples</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>v25.tex</h3>
+          <p><a href="https://github.com/rgrossharv/LeanTeX/blob/main/examples/minimal/v25.tex">Source</a> · <a href="./examples/minimal/v25.pdf">PDF</a></p>
+        </article>
+        <article class="card">
+          <h3>minimal.tex</h3>
+          <p><a href="https://github.com/rgrossharv/LeanTeX/blob/main/examples/minimal/minimal.tex">Source</a> · <a href="./examples/minimal/minimal.pdf">PDF</a></p>
+        </article>
+        <article class="card">
+          <h3>project.tex</h3>
+          <p><a href="https://github.com/rgrossharv/LeanTeX/blob/main/examples/minimal/projectex/project.tex">Source</a> · <a href="./examples/minimal/projectex/project.pdf">PDF</a></p>
+        </article>
+      </div>
+    </div>
+  </section>
+</main>
 
-<table>
-<thead><tr><th>Option</th><th>Effect</th></tr></thead>
-<tbody>
-<tr><td><code>show=both</code></td><td>Show code block and infoview output (default)</td></tr>
-<tr><td><code>show=code</code></td><td>Show code block only</td></tr>
-<tr><td><code>show=output</code></td><td>Show infoview output only</td></tr>
-</tbody>
-</table>
-
-<p>Shared-context mode (definitions from earlier blocks visible in later ones):</p>
-<pre><code>\usepackage[onefile]{leantexv2}</code></pre>
-
-<p>Dump the complete infoview at any point:</p>
-<pre><code>\totalinfoview</code></pre>
-
-<hr>
-
-<h2 id="examples">Examples</h2>
-
-<p>
-Examples live in
-<a href="https://github.com/rgrossharv/LeanTeX/tree/main/examples/minimal">examples/minimal</a>.
-Use the dedicated examples page to view source and output:
-<a href="./index.html?view=examples">open examples page</a>.
-</p>
-
-<ul>
-<li><code>project.tex</code> — featured example: Commutative Algebra with Mathlib</li>
-<li><code>minimal.tex</code> — small demo with basic snippets</li>
-<li><code>onefile.tex</code> — shared-context (onefile) mode demo</li>
-</ul>
-
-<hr>
-
-<h2>Documentation</h2>
-
-<p>
-For full details, see the
-<a href="https://github.com/rgrossharv/LeanTeX#readme">README</a>.
-</p>
-
-<div class="footer">
-<hr>
-<div class="footer-row">
-  <span>LeanTeX v2 &mdash; Public Domain / The Unlicense</span>
-  <span class="footer-right">Maintained by <a href="https://github.com/rgrossharv" target="_blank" rel="noopener">Ryland Gross</a></span>
-</div>
-</div>
-</section>
-
-<section id="requirementsView" hidden>
-<h1>LeanTeX v2 Requirements</h1>
-
-<div class="nav">
-<a href="./index.html">Home</a> |
-<a href="./index.html?view=examples">Examples</a> |
-<a href="https://github.com/rgrossharv/LeanTeX">GitHub Repository</a>
-</div>
-
-<p>Before installing LeanTeX v2, make sure your machine has the following:</p>
-
-<table>
-<thead><tr><th>Dependency</th><th>Version</th><th>Notes</th></tr></thead>
-<tbody>
-<tr><td><strong>Python</strong></td><td>3.9+</td><td></td></tr>
-<tr><td><strong>Lean 4 + Lake</strong></td><td>latest</td><td>Install via <a href="https://github.com/leanprover/elan" target="_blank" rel="noopener">elan</a></td></tr>
-<tr><td><strong>TeX distribution</strong></td><td>any</td><td>Must include XeLaTeX or LuaLaTeX</td></tr>
-<tr><td><code>latexmk</code></td><td>any</td><td>Included in most TeX distributions</td></tr>
-<tr><td><code>minted</code></td><td>2.0+</td><td>LaTeX package (CTAN)</td></tr>
-<tr><td><strong>Pygments</strong></td><td>any</td><td><code>pip install Pygments</code> &mdash; provides <code>pygmentize</code></td></tr>
-<tr><td><code>tcolorbox</code></td><td>any</td><td>LaTeX package (CTAN)</td></tr>
-<tr><td><code>fontspec</code></td><td>any</td><td>Included with XeLaTeX/LuaLaTeX distributions</td></tr>
-</tbody>
-</table>
-
-<p><strong>Note:</strong> LeanTeX v2 requires <strong>XeLaTeX or LuaLaTeX</strong> (not pdflatex) for native Unicode support.</p>
-
-<h2>Recommended Fonts (optional)</h2>
-
-<p>For best Unicode symbol coverage, install one of these monospace fonts (checked in this order):</p>
-<ol>
-  <li><strong>JuliaMono</strong> &mdash; best Lean 4 symbol coverage (<a href="https://juliamono.netlify.app/" target="_blank" rel="noopener">juliamono.netlify.app</a>)</li>
-  <li><strong>DejaVu Sans Mono</strong> &mdash; good coverage, widely available</li>
-  <li><strong>Noto Sans Mono</strong> &mdash; good coverage</li>
-  <li><strong>Menlo</strong> &mdash; macOS default; missing symbols auto-fallback to STIX Two Math</li>
-</ol>
-
-<p>If none of these are installed, LeanTeX v2 falls back to system fonts with automatic Unicode symbol substitution (130+ Lean symbols mapped via STIX Two Math / Apple Symbols / Symbola).</p>
-
-<div class="footer">
-<hr>
-<div class="footer-row">
-  <span>LeanTeX v2 requirements</span>
-  <span class="footer-right">Maintained by <a href="https://github.com/rgrossharv" target="_blank" rel="noopener">Ryland Gross</a></span>
-</div>
-</div>
-</section>
-
-<section id="examplesView" hidden>
-<h1>LeanTeX v2 Examples</h1>
-
-<p>
-This page shows example source and rendered PDFs from <code>examples/minimal</code>.
-</p>
-
-<div class="nav">
-<a href="./index.html">Home</a> |
-<a href="https://github.com/rgrossharv/LeanTeX/tree/main/examples/minimal">examples/minimal on GitHub</a>
-</div>
-
-<hr>
-
-<div class="example-item featured" id="project">
-  <div class="featured-label">&#9733; Featured Example</div>
-  <h2>project.tex</h2>
-  <p>A Commutative Algebra document using Mathlib. Demonstrates Lean 4 theorem statements, tactic proofs, and infoview output embedded directly in a mathematical paper.</p>
-  <ul>
-    <li><a href="https://raw.githubusercontent.com/rgrossharv/LeanTeX/main/examples/minimal/projectex/project.tex" target="_blank" rel="noopener">View source text (raw project.tex)</a></li>
-    <li><a href="https://github.com/rgrossharv/LeanTeX/blob/main/examples/minimal/projectex/project.tex" target="_blank" rel="noopener">View source on GitHub</a></li>
-    <li><a href="./examples/minimal/projectex/project.pdf">Open compiled PDF (project.pdf)</a></li>
-  </ul>
-</div>
-
-<hr>
-
-<div class="example-item" id="minimal">
-  <h2>minimal.tex</h2>
-  <p>A small demo showing basic LeanTeX v2 usage: <code>#check</code>, simple proofs, and error rendering.</p>
-  <ul>
-    <li><a href="https://raw.githubusercontent.com/rgrossharv/LeanTeX/main/examples/minimal/minimal.tex" target="_blank" rel="noopener">View source text (raw minimal.tex)</a></li>
-    <li><a href="https://github.com/rgrossharv/LeanTeX/blob/main/examples/minimal/minimal.tex" target="_blank" rel="noopener">View source on GitHub</a></li>
-    <li><a href="./examples/minimal/minimal.pdf">Open compiled PDF (minimal.pdf)</a></li>
-  </ul>
-</div>
-
-<hr>
-
-<div class="example-item" id="onefile">
-  <h2>onefile.tex</h2>
-  <p>Demonstrates shared-context (onefile) mode: definitions introduced in an earlier <code>lean</code> block are visible in later blocks, just as in a single Lean file.</p>
-  <ul>
-    <li><a href="https://raw.githubusercontent.com/rgrossharv/LeanTeX/main/examples/minimal/onefile.tex" target="_blank" rel="noopener">View source text (raw onefile.tex)</a></li>
-    <li><a href="https://github.com/rgrossharv/LeanTeX/blob/main/examples/minimal/onefile.tex" target="_blank" rel="noopener">View source on GitHub</a></li>
-  </ul>
-</div>
-
-<div class="footer">
-<hr>
-<div class="footer-row">
-  <span>LeanTeX v2 examples page</span>
-  <span class="footer-right">Maintained by <a href="https://github.com/rgrossharv" target="_blank" rel="noopener">Ryland Gross</a></span>
-</div>
-</div>
-</section>
-
-<script>
-(function () {
-  const params = new URLSearchParams(window.location.search);
-  const view = params.get("view");
-
-  const homeView = document.getElementById("homeView");
-  const requirementsView = document.getElementById("requirementsView");
-  const examplesView = document.getElementById("examplesView");
-
-  homeView.hidden = view === "examples" || view === "requirements";
-  requirementsView.hidden = view !== "requirements";
-  examplesView.hidden = view !== "examples";
-})();
-</script>
-
+<footer>
+  <div class="wrap footer-row">
+    <span>LeanTeX is released into the public domain via The Unlicense.</span>
+    <span>Maintained by <a href="https://github.com/rgrossharv">Ryland Gross</a>.</span>
+  </div>
+</footer>
 </body>
 </html>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://rgrossharv.github.io/LeanTeX/sitemap.xml

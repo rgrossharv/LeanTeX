@@ -1,6 +1,6 @@
 # LeanTeX v2.5
 
-LeanTeX brings Lean 4 feedback into LaTeX PDFs. Version 2.5 is the recommended version: write Lean code with native `minted`, then ask LeanTeX to render the matching diagnostics or infoview-style output.
+LeanTeX brings Lean 4 feedback into LaTeX PDFs. Version 2.5 is the recommended version: write Lean code with native `minted`, then ask LeanTeX to render the matching diagnostics or infoview-style output. It is meant for mathematical writing, theorem proving, formalization notes, and Mathlib-based documents where Lean source and proof state should appear cleanly in a compiled PDF.
 
 ```tex
 \usepackage[onefile]{leantexv2}

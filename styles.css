@@ -1,0 +1,171 @@
+:root {
+  --paper: #fbf7eb;
+  --paper-soft: #fffdf6;
+  --ink: #111;
+  --rule: #9b927f;
+  --link: #0645ad;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--paper);
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  line-height: 1.6;
+  padding: 34px clamp(20px, 7vw, 96px) 64px;
+}
+
+a,
+a:visited,
+a:hover {
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.16em;
+}
+
+.page-shell {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+}
+
+.site-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 10px;
+  margin-bottom: 28px;
+}
+
+.wordmark {
+  font-weight: 700;
+}
+
+.nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px 14px;
+}
+
+h1,
+h2,
+h3,
+p,
+pre {
+  margin-top: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 0.35em;
+  font-weight: 700;
+}
+
+p {
+  margin-bottom: 1em;
+}
+
+code,
+pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88rem;
+}
+
+pre {
+  background: var(--paper-soft);
+  border: 1px solid var(--rule);
+  padding: 14px 16px;
+  overflow-x: auto;
+  margin-bottom: 1.25em;
+}
+
+code {
+  overflow-wrap: anywhere;
+}
+
+.intro-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+  gap: clamp(28px, 6vw, 72px);
+  align-items: start;
+}
+
+.lede {
+  font-size: 1.08rem;
+}
+
+.ledger {
+  display: grid;
+  gap: 22px;
+}
+
+.entry {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: 18px;
+}
+
+.entry + .entry {
+  margin-top: 4px;
+}
+
+.meta {
+  font-style: italic;
+}
+
+.link-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 12px;
+}
+
+.note {
+  color: #3c372f;
+}
+
+.page-footer {
+  border-top: 1px solid var(--rule);
+  margin-top: 36px;
+  padding-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 760px) {
+  body {
+    font-size: 17px;
+    padding: 18px 16px 40px;
+  }
+
+  .site-header,
+  .intro-grid,
+  .entry {
+    grid-template-columns: 1fr;
+  }
+
+  .site-header {
+    display: grid;
+  }
+
+  .nav-links {
+    justify-content: flex-start;
+  }
+}

@@ -33,6 +33,8 @@ Project page: <https://rgrossharv.github.io/LeanTeX/>
 
 Release: <https://github.com/rgrossharv/LeanTeX/releases/tag/v2.5.0>
 
+Current example PDF: <https://rgrossharv.github.io/LeanTeX/examples/minimal/hausdorff_v25.pdf>
+
 ## Install
 
 Requirements: Python 3.9+, Lean 4/Lake, a TeX distribution with XeLaTeX or LuaLaTeX, `minted`, and Pygments.

@@ -36,10 +36,8 @@ jobs:
       - name: Prepare static site
         run: |
           mkdir -p _site/examples/minimal/projectex
-          cp index.html README.md LICENSE .nojekyll _site/
-          cp examples/minimal/minimal.pdf _site/examples/minimal/
-          cp examples/minimal/v25.pdf _site/examples/minimal/
-          cp examples/minimal/projectex/project.pdf _site/examples/minimal/projectex/
+          cp index.html install.html examples.html versions.html version1.html version2.html styles.css README.md LICENSE .nojekyll _site/
+          cp examples/minimal/hausdorff_v25.pdf _site/examples/minimal/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
